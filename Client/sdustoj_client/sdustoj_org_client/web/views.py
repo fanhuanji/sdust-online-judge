@@ -157,19 +157,80 @@ class MainPages(object):
 
 
 class OrgPages(object):
-    @staticmethod
-    def list(request):
-        return Utils.Render.org_admin(request, 'organization/list.html')
+    class Organization(object):
+        @staticmethod
+        def list(request):
+            return Utils.Render.org_admin(request, 'organization/list.html')
 
-    @staticmethod
-    def create(request):
-        return Utils.Render.org_admin(request, 'organization/create.html')
+        @staticmethod
+        def create(request):
+            return Utils.Render.org_admin(request, 'organization/create.html')
 
-    @staticmethod
-    def instance(request, oid):
-        return Utils.Render.org_admin(request, 'organization/instance.html', {
-            'oid': oid
-        })
+        @staticmethod
+        def instance(request, oid):
+            return Utils.Render.org_admin(request, 'organization/instance.html', {
+                'oid': oid
+            })
+
+    class EduAdmin(object):
+        @staticmethod
+        def list(request, oid):
+            return Utils.Render.org_admin(request, 'organization/eduAdmin/list.html', {
+                'oid': oid
+            })
+
+        @staticmethod
+        def create(request, oid):
+            return Utils.Render.org_admin(request, 'organization/eduAdmin/create.html', {
+                'oid': oid
+            })
+
+        @staticmethod
+        def instance(request, oid, eid):
+            return Utils.Render.org_admin(request, 'organization/eduAdmin/instance.html', {
+                'oid': oid,
+                'eid': eid
+            })
+
+    class Teacher(object):
+        @staticmethod
+        def list(request, oid):
+            return Utils.Render.org_admin(request, 'organization/teacher/list.html', {
+                'oid': oid
+            })
+
+        @staticmethod
+        def create(request, oid):
+            return Utils.Render.org_admin(request, 'organization/teacher/create.html', {
+                'oid': oid
+            })
+
+        @staticmethod
+        def instance(request, oid, eid):
+            return Utils.Render.org_admin(request, 'organization/teacher/instance.html', {
+                'oid': oid,
+                'eid': eid
+            })
+
+    class Student(object):
+        @staticmethod
+        def list(request, oid):
+            return Utils.Render.org_admin(request, 'organization/student/list.html', {
+                'oid': oid
+            })
+
+        @staticmethod
+        def create(request, oid):
+            return Utils.Render.org_admin(request, 'organization/student/create.html', {
+                'oid': oid
+            })
+
+        @staticmethod
+        def instance(request, oid, eid):
+            return Utils.Render.org_admin(request, 'organization/student/instance.html', {
+                'oid': oid,
+                'eid': eid
+            })
 
 
 class UserPages(object):

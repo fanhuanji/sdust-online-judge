@@ -37,6 +37,28 @@ class OrganizationFilters:
                 'number_students', 'number_students_gte', 'number_students_lte'
             ) + Utils.resource_fields
 
+    class EduAdmin(Utils.ResourceFilter):
+        class Meta:
+            model = models.EduAdmin
+            fields = (
+                'username', 'name', 'sex', 'phone', 'email'
+            ) + Utils.resource_fields
+
+    class Teacher(Utils.ResourceFilter):
+        class Meta:
+            model = models.Teacher
+            fields = (
+                'username', 'name', 'sex', 'phone', 'email', 'teacher_id'
+            ) + Utils.resource_fields
+
+    class Student(Utils.ResourceFilter):
+        class Meta:
+            model = models.Student
+            fields = (
+                'username', 'name', 'sex', 'phone', 'email',
+                'student_id', 'grade', 'class_in'
+            ) + Utils.resource_fields
+
 
 class UserFilters:
     class UserProfile(Utils.ResourceFilter):

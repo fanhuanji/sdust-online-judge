@@ -145,7 +145,7 @@ class Utils:
                                         Mixin.NestedMixin):
             pass
 
-        class NestedResourceDetailViewSet(Mixin.ExtraDataMixin,
+        class NestedResourceInstanceViewSet(Mixin.ExtraDataMixin,
                                           Mixin.NestedResourceInstanceMixin,
                                           viewsets.GenericViewSet,
                                           Mixin.ResourceMixin,
@@ -338,3 +338,144 @@ class OrgViewSets(object):
                 parent_lookup = 'organization_id'
                 parent_related_name = 'organization'
                 parent_pk_field = 'id'
+
+                filter_class = filters.OrganizationFilters.EduAdmin
+                ordering_fields = ('id', 'user', 'username', )
+                search_fields = ('id', 'username', 'name')
+
+                def perform_create(self, serializer):
+                    instance = super().perform_create(serializer)
+                    instance.organization.number_admins += 1
+                    instance.organization.save()
+                    return instance
+
+        class Instance(object):
+            class EduAdminAdminViewSet(Utils.ViewSets.NestedResourceInstanceViewSet):
+                queryset = models.EduAdmin.objects
+                serializer_class = serializers.OrgSerializers.EduAdmin.InstanceAdmin
+                permission_classes = (permissions.IsOrgAdmin, )
+                lookup_field = 'id'
+
+                parent_queryset = models.Organization.objects
+                parent_lookup = 'organization_id'
+                parent_related_name = 'organization'
+                parent_pk_field = 'id'
+
+                def perform_destroy(self, instance):
+                    profile = instance.profile
+                    oid = instance.organization.id
+                    identities = profile.identities
+                    edu_orgs = identities[models.IdentityChoices.edu_admin]
+                    for i in range(0, len(edu_orgs)):
+                        if edu_orgs[i] == oid:
+                            edu_orgs.pop(i)
+                            break
+                    if len(edu_orgs) == 0:
+                        identities.pop(models.IdentityChoices.edu_admin)
+                    profile.identities = identities
+                    profile.save()
+                    instance.organization.number_admins -= 1
+                    instance.organization.save()
+                    super().perform_destroy(instance)
+
+    class Teacher(object):
+        class List(object):
+            class TeacherAdminViewSet(Utils.ViewSets.NestedResourceListViewSet):
+                queryset = models.Teacher.objects
+                serializer_class = serializers.OrgSerializers.Teacher.ListAdmin
+                permission_classes = (permissions.IsOrgAdmin, )
+
+                parent_queryset = models.Organization.objects
+                parent_lookup = 'organization_id'
+                parent_related_name = 'organization'
+                parent_pk_field = 'id'
+
+                filter_class = filters.OrganizationFilters.Teacher
+                ordering_fields = ('id', 'user', 'username',)
+                search_fields = ('id', 'username', 'name', 'teacher_id')
+
+                def perform_create(self, serializer):
+                    instance = super().perform_create(serializer)
+                    instance.organization.number_teachers += 1
+                    instance.organization.save()
+                    return instance
+
+        class Instance(object):
+            class TeacherAdminViewSet(Utils.ViewSets.NestedResourceInstanceViewSet):
+                queryset = models.Teacher.objects
+                serializer_class = serializers.OrgSerializers.Teacher.InstanceAdmin
+                permission_classes = (permissions.IsOrgAdmin, )
+                lookup_field = 'id'
+
+                parent_queryset = models.Organization.objects
+                parent_lookup = 'organization_id'
+                parent_related_name = 'organization'
+                parent_pk_field = 'id'
+
+                def perform_destroy(self, instance):
+                    profile = instance.profile
+                    oid = instance.organization.id
+                    identities = profile.identities
+                    teacher_orgs = identities[models.IdentityChoices.teacher]
+                    for i in range(0, len(teacher_orgs)):
+                        if teacher_orgs[i] == oid:
+                            teacher_orgs.pop(i)
+                            break
+                    if len(teacher_orgs) == 0:
+                        identities.pop(models.IdentityChoices.teacher)
+                    profile.identities = identities
+                    profile.save()
+                    instance.organization.number_teachers -= 1
+                    instance.organization.save()
+                    super().perform_destroy(instance)
+
+    class Student(object):
+        class List(object):
+            class StudentAdminViewSet(Utils.ViewSets.NestedResourceListViewSet):
+                queryset = models.Student.objects
+                serializer_class = serializers.OrgSerializers.Student.ListAdmin
+                permission_classes = (permissions.IsOrgAdmin, )
+
+                parent_queryset = models.Organization.objects
+                parent_lookup = 'organization_id'
+                parent_related_name = 'organization'
+                parent_pk_field = 'id'
+
+                filter_class = filters.OrganizationFilters.Student
+                ordering_fields = ('id', 'user', 'username',)
+                search_fields = ('id', 'username', 'name', 'student_id')
+
+                def perform_create(self, serializer):
+                    instance = super().perform_create(serializer)
+                    instance.organization.number_students += 1
+                    instance.organization.save()
+                    return instance
+
+        class Instance(object):
+            class StudentAdminViewSet(Utils.ViewSets.NestedResourceInstanceViewSet):
+                queryset = models.Student.objects
+                serializer_class = serializers.OrgSerializers.Student.InstanceAdmin
+                permission_classes = (permissions.IsOrgAdmin, )
+                lookup_field = 'id'
+
+                parent_queryset = models.Organization.objects
+                parent_lookup = 'organization_id'
+                parent_related_name = 'organization'
+                parent_pk_field = 'id'
+
+                def perform_destroy(self, instance):
+                    profile = instance.profile
+                    oid = instance.organization.id
+                    identities = profile.identities
+                    student_orgs = identities[models.IdentityChoices.student]
+                    for i in range(0, len(student_orgs)):
+                        if student_orgs[i] == oid:
+                            student_orgs.pop(i)
+                            break
+                    if len(student_orgs) == 0:
+                        identities.pop(models.IdentityChoices.student)
+                    profile.identities = identities
+                    profile.save()
+                    instance.organization.number_students -= 1
+                    instance.organization.save()
+                    super().perform_destroy(instance)

@@ -1,3 +1,4 @@
+# -*- encoding=utf-8 -*
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres import fields as pg_fields
@@ -96,14 +97,21 @@ class Student(Resource):
 
     user = models.ForeignKey(User, related_name='student_identities', to_field='id',
                              on_delete=models.CASCADE)
+    username = models.CharField(max_length=150)
     profile = models.ForeignKey(UserProfile, related_name='student_identities', to_field='user',
                                 on_delete=models.CASCADE)
     organization = models.ForeignKey('Organization', related_name='students', to_field='id',
                                      on_delete=models.CASCADE)
 
+    name = models.CharField(max_length=150, null=True)
+    sex = models.CharField(max_length=8, default='secret')
+
+    phone = models.CharField(max_length=16, null=True)
+    email = models.EmailField(max_length=128, null=True)
+
     student_id = models.CharField(max_length=32)
-    grade = models.CharField(max_length=32)
-    class_in = models.CharField(max_length=128)
+    grade = models.CharField(max_length=32, null=None)
+    class_in = models.CharField(max_length=128, null=None)
 
 
 class Teacher(Resource):
@@ -113,10 +121,17 @@ class Teacher(Resource):
 
     user = models.ForeignKey(User, related_name='teacher_identities', to_field='id',
                              on_delete=models.CASCADE)
+    username = models.CharField(max_length=150)
     profile = models.ForeignKey(UserProfile, related_name='teacher_identities', to_field='user',
                                 on_delete=models.CASCADE)
     organization = models.ForeignKey('Organization', related_name='teachers', to_field='id',
                                      on_delete=models.CASCADE)
+
+    name = models.CharField(max_length=150, null=True)
+    sex = models.CharField(max_length=8, default='secret')
+
+    phone = models.CharField(max_length=16, null=True)
+    email = models.EmailField(max_length=128, null=True)
 
     teacher_id = models.CharField(max_length=32)
 
@@ -128,6 +143,7 @@ class EduAdmin(Resource):
 
     user = models.ForeignKey(User, related_name='edu_admin_identities', to_field='id',
                              on_delete=models.CASCADE)
+    username = models.CharField(max_length=150)
     profile = models.ForeignKey(UserProfile, related_name='edu_admin_identities', to_field='user',
                                 on_delete=models.CASCADE)
     organization = models.ForeignKey('Organization', related_name='edu_admins', to_field='id',

@@ -1,0 +1,38 @@
+{% extends "organization/orgAdminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}教务管理员{% endblock %}
+
+{% block nav_edu_admin %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="allOrg"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.DRFTable({
+  id: 'allOrg',
+  title: '教务管理员',
+  url: "{% url 'admin-edu-admin-list' oid %}",
+  search: true,
+  filters: [
+    { name: 'creator', type: 'text', placeholder: '请输入创建者用户名', caption: '创建者' },
+    { name: 'updater', type: 'text', placeholder: '请输入更新者用户名', caption: '更新者' }
+  ],
+  columns: [
+    { name: 'id', caption: 'ID', sort: true, ordering: 1, type: 'Link', typeInfo: { base_url: '{% url 'web-edu-admins' oid %}', key: 'id' } },
+    { name: 'name', caption: '姓名', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-edu-admins' oid %}', key: 'id' } },
+    { name: 'username', caption: '用户名', sort: true, type: 'Text' },
+    { name: 'phone', caption: '电话', sort: true, type: 'Text' },
+    { name: "available", caption: "可用", type: 'Boolean' },
+  ],
+  createURL: '{% url 'web-edu-admins-create' oid %}'
+})
+
+</script>
+{% endblock %}

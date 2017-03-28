@@ -1,3 +1,4 @@
+# -*- encoding=utf-8 -*
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -42,101 +43,6 @@ class Utils(object):
         profile.save()
 
         return user, profile
-
-
-class OrgSerializers(object):
-    """
-    与机构管理相关的Serializer。
-    """
-    class Organization(object):
-        class ListAdmin(serializers.ModelSerializer):
-            @staticmethod
-            def validate_parent(value):
-                root = models.Organization.objects.get(name='ROOT')
-
-                checked = set()
-                cur = value
-
-                while cur is not None and cur.id not in checked:
-                    if cur.id == root.id:
-                        return value
-                    checked.add(cur.id)
-                    cur = cur.parent
-
-                raise serializers.ValidationError('Organization unreachable.')
-
-            class Meta:
-                model = models.Organization
-                fields = '__all__'
-                read_only_fields = Utils.read_only_fields + (
-                    'number_organizations', 'number_students', 'number_teachers', 'number_admins'
-                )
-                extra_kwargs = {
-                    'parent': {'allow_null': False, 'required': True}
-                }
-
-        class InstanceAdmin(serializers.ModelSerializer):
-            def validate_parent(self, value):
-                root = models.Organization.objects.get(name='ROOT')
-
-                checked = set()
-                cur = value
-                checked.add(self.instance.id)
-
-                while cur is not None and cur.id not in checked:
-                    if cur.id == root.id:
-                        return value
-                    checked.add(cur.id)
-                    cur = cur.parent
-
-                raise serializers.ValidationError('Organization unreachable.')
-
-            class Meta:
-                model = models.Organization
-                fields = '__all__'
-                read_only_fields = Utils.read_only_fields + (
-                    'number_organizations', 'number_students', 'number_teachers', 'number_admins'
-                )
-                extra_kwargs = {
-                    'parent': {'allow_null': False, 'required': True}
-                }
-
-    class EduAdmin(object):
-        class ListAdmin(serializers.ModelSerializer):
-            username = serializers.CharField(max_length=150, write_only=True)
-            password = serializers.CharField(max_length=128, write_only=True)
-
-            class Meta:
-                model = models.EduAdmin
-                exclude = ('organization', 'user', 'profile')
-                read_only_fields = Utils.read_only_fields
-
-            def create(self, validated_data):
-                u = validated_data.get('username')
-                p = validated_data.pop('password')
-                active = validated_data.get('available', False)
-                name = validated_data.get('name', None)
-                sex = validated_data.get('sex', 'SECRET')
-                phone = validated_data.get('phone', None)
-                email = validated_data.get('email', None)
-                creator = validated_data.get('creator', None)
-                updater = validated_data.get('updater', None)
-
-                user, profile = Utils.create_user_profile(
-                    username=u, password=p, available=active,
-                    name=name, sex=sex, phone=phone, email=email,
-                    creator=creator, updater=updater
-                )
-
-                organization = validated_data.get('organization')
-                profile.identities = {models.IdentityChoices.edu_admin: [organization.id]}
-                profile.save()
-
-                edu_admin = models.EduAdmin(user=user, profile=profile, organization=organization,
-                                            name=name, sex=sex, phone=phone, email=email,
-                                            creator=creator, updater=updater)
-                edu_admin.save()
-                return edu_admin
 
 
 class UserSerializers(object):
@@ -569,3 +475,297 @@ class UserSerializers(object):
                 'password': {'write_only': True,
                              'style': {'input_type': 'password'}}
             }
+
+
+class OrgSerializers(object):
+    """
+    与机构管理相关的Serializer。
+    """
+    class Organization(object):
+        class ListAdmin(serializers.ModelSerializer):
+            @staticmethod
+            def validate_parent(value):
+                root = models.Organization.objects.get(name='ROOT')
+
+                checked = set()
+                cur = value
+
+                while cur is not None and cur.id not in checked:
+                    if cur.id == root.id:
+                        return value
+                    checked.add(cur.id)
+                    cur = cur.parent
+
+                raise serializers.ValidationError('Organization unreachable.')
+
+            class Meta:
+                model = models.Organization
+                fields = '__all__'
+                read_only_fields = Utils.read_only_fields + (
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins'
+                )
+                extra_kwargs = {
+                    'parent': {'allow_null': False, 'required': True}
+                }
+
+        class InstanceAdmin(serializers.ModelSerializer):
+            def validate_parent(self, value):
+                root = models.Organization.objects.get(name='ROOT')
+
+                checked = set()
+                cur = value
+                checked.add(self.instance.id)
+
+                while cur is not None and cur.id not in checked:
+                    if cur.id == root.id:
+                        return value
+                    checked.add(cur.id)
+                    cur = cur.parent
+
+                raise serializers.ValidationError('Organization unreachable.')
+
+            class Meta:
+                model = models.Organization
+                fields = '__all__'
+                read_only_fields = Utils.read_only_fields + (
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins'
+                )
+                extra_kwargs = {
+                    'parent': {'allow_null': False, 'required': True}
+                }
+
+    class EduAdmin(object):
+        class ListAdmin(serializers.ModelSerializer):
+            password = serializers.CharField(max_length=128, write_only=True)
+
+            @staticmethod
+            def validate_username(value):
+                return UserSerializers.Utils.validate_username(value)
+
+            @staticmethod
+            def validate_password(value):
+                return UserSerializers.Utils.validate_password(value)
+
+            class Meta:
+                model = models.EduAdmin
+                exclude = ('organization', 'user', 'profile')
+                read_only_fields = Utils.read_only_fields
+
+            def create(self, validated_data):
+                u = validated_data.get('username')
+                p = validated_data.pop('password')
+                active = validated_data.get('available', False)
+                name = validated_data.get('name', None)
+                sex = validated_data.get('sex', 'SECRET')
+                phone = validated_data.get('phone', None)
+                email = validated_data.get('email', None)
+                creator = validated_data.get('creator', None)
+                updater = validated_data.get('updater', None)
+
+                user, profile = Utils.create_user_profile(
+                    username=u, password=p, available=active,
+                    name=name, sex=sex, phone=phone, email=email,
+                    creator=creator, updater=updater
+                )
+
+                organization = validated_data.get('organization')
+                profile.identities = {models.IdentityChoices.edu_admin: [organization.id]}
+                profile.save()
+
+                edu_admin = models.EduAdmin(user=user, username=u, profile=profile, organization=organization,
+                                            name=name, sex=sex, phone=phone, email=email,
+                                            creator=creator, updater=updater)
+                edu_admin.save()
+                return edu_admin
+
+        class InstanceAdmin(serializers.ModelSerializer):
+            password = serializers.CharField(max_length=128, write_only=True)
+
+            @staticmethod
+            def validate_password(value):
+                return UserSerializers.Utils.validate_password(value)
+
+            class Meta:
+                model = models.EduAdmin
+                exclude = ('organization', 'user', 'profile')
+                read_only_fields = Utils.read_only_fields + ('username', )
+
+            def update(self, instance, validated_data):
+                if 'password' in validated_data:
+                    instance.user.set_password(validated_data['password'])
+                    instance.user.save()
+                if 'available' in validated_data:
+                    instance.available = validated_data['available']
+                if 'name' in validated_data:
+                    instance.name = validated_data['name']
+                if 'sex' in validated_data:
+                    instance.sex = validated_data['sex']
+                if 'phone' in validated_data:
+                    instance.phone = validated_data['phone']
+                if 'email' in validated_data:
+                    instance.email = validated_data['email']
+                instance.save()
+
+                return instance
+
+    class Teacher(object):
+        class ListAdmin(serializers.ModelSerializer):
+            password = serializers.CharField(max_length=128, write_only=True)
+
+            @staticmethod
+            def validate_username(value):
+                return UserSerializers.Utils.validate_username(value)
+
+            @staticmethod
+            def validate_password(value):
+                return UserSerializers.Utils.validate_password(value)
+
+            class Meta:
+                model = models.Teacher
+                exclude = ('organization', 'user', 'profile')
+                read_only_fields = Utils.read_only_fields
+
+            def create(self, validated_data):
+                u = validated_data.get('username')
+                p = validated_data.pop('password')
+                active = validated_data.get('available', False)
+                name = validated_data.get('name', None)
+                sex = validated_data.get('sex', 'SECRET')
+                phone = validated_data.get('phone', None)
+                email = validated_data.get('email', None)
+                creator = validated_data.get('creator', None)
+                updater = validated_data.get('updater', None)
+                teacher_id = validated_data.get('teacher_id', '')
+
+                user, profile = Utils.create_user_profile(
+                    username=u, password=p, available=active,
+                    name=name, sex=sex, phone=phone, email=email,
+                    creator=creator, updater=updater
+                )
+
+                organization = validated_data.get('organization')
+                profile.identities = {models.IdentityChoices.teacher: [organization.id]}
+                profile.save()
+
+                teacher = models.Teacher(user=user, username=u, profile=profile, organization=organization,
+                                         name=name, sex=sex, phone=phone, email=email,
+                                         creator=creator, updater=updater,
+                                         teacher_id=teacher_id)
+                teacher.save()
+                return teacher
+
+        class InstanceAdmin(serializers.ModelSerializer):
+            password = serializers.CharField(max_length=128, write_only=True)
+
+            @staticmethod
+            def validate_password(value):
+                return UserSerializers.Utils.validate_password(value)
+
+            class Meta:
+                model = models.Teacher
+                exclude = ('organization', 'user', 'profile')
+                read_only_fields = Utils.read_only_fields + ('username', )
+
+            def update(self, instance, validated_data):
+                if 'password' in validated_data:
+                    instance.user.set_password(validated_data['password'])
+                    instance.user.save()
+                if 'available' in validated_data:
+                    instance.available = validated_data['available']
+                if 'name' in validated_data:
+                    instance.name = validated_data['name']
+                if 'sex' in validated_data:
+                    instance.sex = validated_data['sex']
+                if 'phone' in validated_data:
+                    instance.phone = validated_data['phone']
+                if 'email' in validated_data:
+                    instance.email = validated_data['email']
+                if 'teacher_id' in validated_data:
+                    instance.teacher_id = validated_data['teacher_id']
+                instance.save()
+
+                return instance
+
+    class Student(object):
+        class ListAdmin(serializers.ModelSerializer):
+            password = serializers.CharField(max_length=128, write_only=True)
+
+            @staticmethod
+            def validate_username(value):
+                return UserSerializers.Utils.validate_username(value)
+
+            @staticmethod
+            def validate_password(value):
+                return UserSerializers.Utils.validate_password(value)
+
+            class Meta:
+                model = models.Student
+                exclude = ('organization', 'user', 'profile')
+                read_only_fields = Utils.read_only_fields
+
+            def create(self, validated_data):
+                u = validated_data.get('username')
+                p = validated_data.pop('password')
+                active = validated_data.get('available', False)
+                name = validated_data.get('name', None)
+                sex = validated_data.get('sex', 'SECRET')
+                phone = validated_data.get('phone', None)
+                email = validated_data.get('email', None)
+                creator = validated_data.get('creator', None)
+                updater = validated_data.get('updater', None)
+                student_id = validated_data.get('student_id', '')
+                grade = validated_data.get('grade', None)
+                class_in = validated_data.get('class_in', None)
+
+                user, profile = Utils.create_user_profile(
+                    username=u, password=p, available=active,
+                    name=name, sex=sex, phone=phone, email=email,
+                    creator=creator, updater=updater
+                )
+
+                organization = validated_data.get('organization')
+                profile.identities = {models.IdentityChoices.student: [organization.id]}
+                profile.save()
+
+                student = models.Student(user=user, username=u, profile=profile, organization=organization,
+                                         name=name, sex=sex, phone=phone, email=email,
+                                         creator=creator, updater=updater,
+                                         student_id=student_id, grade=grade, class_in=class_in)
+                student.save()
+                return student
+
+        class InstanceAdmin(serializers.ModelSerializer):
+            password = serializers.CharField(max_length=128, write_only=True)
+
+            @staticmethod
+            def validate_password(value):
+                return UserSerializers.Utils.validate_password(value)
+
+            class Meta:
+                model = models.Student
+                exclude = ('organization', 'user', 'profile')
+                read_only_fields = Utils.read_only_fields + ('username', )
+
+            def update(self, instance, validated_data):
+                if 'password' in validated_data:
+                    instance.user.set_password(validated_data['password'])
+                    instance.user.save()
+                if 'available' in validated_data:
+                    instance.available = validated_data['available']
+                if 'name' in validated_data:
+                    instance.name = validated_data['name']
+                if 'sex' in validated_data:
+                    instance.sex = validated_data['sex']
+                if 'phone' in validated_data:
+                    instance.phone = validated_data['phone']
+                if 'email' in validated_data:
+                    instance.email = validated_data['email']
+                if 'student_id' in validated_data:
+                    instance.student_id = validated_data['student_id']
+                if 'grade' in validated_data:
+                    instance.grade = validated_data['grade']
+                if 'class_in' in validated_data:
+                    instance.class_in = validated_data['class_in']
+                instance.save()
+
+                return instance

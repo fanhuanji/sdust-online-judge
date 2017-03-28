@@ -1,3 +1,4 @@
+# -*- encoding=utf-8 -*
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedSimpleRouter
 from .views import UserViewSets, OrgViewSets
@@ -24,7 +25,22 @@ admin_router.register(
 )
 admin_org_router = NestedSimpleRouter(admin_router, r'organizations', lookup='organization')
 admin_org_router.register(
-    r'edu-admins', OrgViewSets.EduAdmin.List.EduAdminAdminViewSet, base_name='admin-edu-admins'
+    r'edu-admins', OrgViewSets.EduAdmin.List.EduAdminAdminViewSet, base_name='admin-edu-admin'
+)
+admin_org_router.register(
+    r'edu-admins', OrgViewSets.EduAdmin.Instance.EduAdminAdminViewSet, base_name='admin-edu-admin'
+)
+admin_org_router.register(
+    r'teachers', OrgViewSets.Teacher.List.TeacherAdminViewSet, base_name='admin-teacher'
+)
+admin_org_router.register(
+    r'teachers', OrgViewSets.Teacher.Instance.TeacherAdminViewSet, base_name='admin-teacher'
+)
+admin_org_router.register(
+    r'students', OrgViewSets.Student.List.StudentAdminViewSet, base_name='admin-student'
+)
+admin_org_router.register(
+    r'students', OrgViewSets.Student.Instance.StudentAdminViewSet, base_name='admin-student'
 )
 
 admin_url_patterns = []

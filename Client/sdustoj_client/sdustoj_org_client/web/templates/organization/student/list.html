@@ -1,0 +1,39 @@
+{% extends "organization/orgAdminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}学生{% endblock %}
+
+{% block nav_student %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="student"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.DRFTable({
+  id: 'student',
+  title: '学生',
+  url: "{% url 'admin-student-list' oid %}",
+  search: true,
+  filters: [
+    { name: 'creator', type: 'text', placeholder: '请输入创建者用户名', caption: '创建者' },
+    { name: 'updater', type: 'text', placeholder: '请输入更新者用户名', caption: '更新者' }
+  ],
+  columns: [
+    { name: 'id', caption: 'ID', sort: true, ordering: 1, type: 'Link', typeInfo: { base_url: '{% url 'web-students' oid %}', key: 'id' } },
+    { name: 'student_id', caption: '学号', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-students' oid %}', key: 'id' } },
+    { name: 'name', caption: '姓名', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-students' oid %}', key: 'id' } },
+    { name: 'username', caption: '用户名', sort: true, type: 'Text' },
+    { name: 'phone', caption: '电话', sort: true, type: 'Text' },
+    { name: "available", caption: "可用", type: 'Boolean' },
+  ],
+  createURL: '{% url 'web-students-create' oid %}'
+})
+
+</script>
+{% endblock %}

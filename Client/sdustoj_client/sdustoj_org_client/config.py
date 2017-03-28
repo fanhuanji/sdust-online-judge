@@ -1,3 +1,5 @@
+# -*- encoding=utf-8 -*
+
 # 数据库的设定
 PG_SETTINGS = {
     'host': 'localhost',

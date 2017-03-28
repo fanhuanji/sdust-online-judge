@@ -502,7 +502,7 @@ flycheck_*.el
 
 /former/
 /WenDang/
-/Client/sdustoj_client/
-!/Client/sdustoj_client/
 /Server/sdustoj_server/collected_static/
 /Judge/adapter-hustoj/Client/client_writer.log
+/Install/installation_logs/
+

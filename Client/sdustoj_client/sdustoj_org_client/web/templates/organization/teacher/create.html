@@ -1,0 +1,95 @@
+{% extends "organization/orgAdminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}创建教师{% endblock %}
+
+{% block nav_teacher %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="teacher"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxForm({
+  id: 'teacher',
+  method: 'POST',
+  toSuccess: '{% url 'web-teachers' oid %}',
+  url: '{% url 'admin-teacher-list' oid %}',
+  items: [
+    {
+      name: 'available',
+      caption: '可用',
+      type: 'Boolean',
+      defaultTrue: true
+    },
+    {
+      name: 'username',
+      caption: '用户名',
+      type: 'Text',
+      typeInfo: {
+        max_length: 150
+      }
+    },
+    {
+      name: 'password',
+      caption: '密码',
+      type: 'Password',
+      typeInfo: {
+        max_length: 128,
+        confirm: true
+      }
+    },
+    {
+      name: 'teacher_id',
+      caption: '教师工号',
+      type: 'Text',
+      typeInfo: {
+        max_length: 32
+      }
+    },
+    {
+      name: 'name',
+      caption: '姓名',
+      type: 'Text',
+      typeInfo: {
+        max_length: 150
+      }
+    },
+    {
+      name: 'sex',
+      caption: '性别',
+      type: 'Select',
+      typeInfo: {
+        ajax: false,
+        choices: [
+          { text: '保密', value: 'SECRET', selected: true },
+          { text: '男', value: 'MALE' },
+          { text: '女', value: 'FEMALE' }
+        ]
+      }
+    },
+    {
+      name: 'phone',
+      caption: '电话',
+      type: 'Text',
+      typeInfo: {
+        max_length: 16
+      }
+    },
+    {
+      name: 'email',
+      caption: '邮箱',
+      type: 'Email',
+      typeInfo: {
+        max_length: 150
+      }
+    }
+  ]
+})
+</script>
+{% endblock %}

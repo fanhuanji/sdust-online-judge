@@ -1,0 +1,78 @@
+{% extends "organization/orgAdminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}教师信息{% endblock %}
+
+{% block nav_org %}active{% endblock %}
+
+{% block nav_teacher %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="col-12">
+  <div class="container">
+    <div id="teacherInfo"></div>
+    <br>
+    <hr>
+    <div id="teacherPwd"></div>
+  </div>
+  <br />
+  <br />
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxInfo({
+  id: 'teacherInfo',
+  title: '教师信息',
+  getMethod: 'GET',
+  updateMethod: 'PATCH',
+  removeMethod: 'DELETE',
+  getURL: '{% url 'admin-teacher-detail' oid eid %}',
+  updateURL: '{% url 'admin-teacher-detail' oid eid %}',
+  removeURL: '{% url 'admin-teacher-detail' oid eid %}',
+  removeToURL: '{% url 'web-teachers' oid %}',
+  items: [
+    { name: 'id', caption: 'ID', type: 'Number', readOnly: true },
+    { name: 'username', caption: '用户名', type: 'Text', readOnly: true },
+    'Divide',
+    { name: 'teacher_id', caption: '教师工号', type: 'Text', typeInfo: { max_length: 32 } },
+    { name: 'name', caption: '姓名', type: 'Text', typeInfo: { max_length: 150 } },
+    { name: 'sex', caption: '性别', type: 'Select',
+      typeInfo: {
+        ajax: false,
+        choices: [
+          { text: '保密', value: 'SECRET', selected: true },
+          { text: '男', value: 'MALE' },
+          { text: '女', value: 'FEMALE' }
+        ]
+      }
+    },
+    'Divide',
+    { name: 'creator', caption: '创建者', type: 'Text', readOnly: true },
+    { name: 'create_time', caption: '创建时间', type: 'Datetime', readOnly: true },
+    { name: 'updater', caption: '更新者', type: 'Text', readOnly: true },
+    { name: 'update_time', caption: '更新时间', type: 'Datetime', readOnly: true },
+    'Divide',
+    { name: 'available', caption: '对外可用', type: 'Boolean' },
+    { name: 'deleted', caption: '是否废弃', type: 'Boolean' },
+    'Divide',
+    { name: 'phone', caption: '电话', type: 'Text', typeInfo: { max_length: 16 } },
+    { name: 'email', caption: '邮箱', type: 'Email', typeInfo: { max_length: 150 } }
+  ]
+
+})
+SATable.SimpleAjaxInfo({
+  id: 'teacherPwd',
+  title: '修改密码',
+  getMethod: 'GET',
+  updateMethod: 'PATCH',
+  getURL: '{% url 'admin-teacher-detail' oid eid %}',
+  updateURL: '{% url 'admin-teacher-detail' oid eid %}',
+  items: [
+    { name: 'password', caption: '新密码', type: 'Text', typeInfo: { writeOnly: true, password: true, confirm:true, max_length: 128 } }
+  ]
+
+})
+</script>
+{% endblock %}

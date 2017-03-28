@@ -1,11 +1,13 @@
-{% extends "organization/adminBasic.html" %}
+{% extends "organization/orgAdminBasic.html" %}
 {% load staticfiles %}
 
 {% block title %}机构信息{% endblock %}
 
 {% block nav_org %}active{% endblock %}
 
-{% block sub_content %}
+{% block nav_basic_info %}active{% endblock %}
+
+{% block sub_content2 %}
 <div class="col-12">
   <div class="container">
     <div id="orgInfo"></div>
