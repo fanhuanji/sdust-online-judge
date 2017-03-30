@@ -271,6 +271,57 @@ SAInfo.Text = function(self, item, value) {
 
   return div
 }
+SAInfo.Date = function(self, item, value) {
+  var getDom = SATable.getDom
+  var div = getDom.Div('col-xs-12')
+  var typeInfo = item.typeInfo
+  var ret = $('<p></p>')
+  var date = new Date(value)
+  var dateStr = date.toLocaleDateString()
+  $(ret).append(dateStr)
+
+  var inputGroup = getDom.Div('input-group')
+  var inputGroup2 = getDom.Div('input-group')
+  var spanBtn = getDom.Span('input-group-btn')
+  var input = getDom.Input(item.name, item.caption)
+  $(input).attr('readonly', 'readonly').datetimepicker({
+    format: 'yyyy-mm-dd',
+    minView: 2,
+    maxView: 4
+  })
+
+  var btn = getDom.Button('保存')
+  $(btn).attr('type', 'submit')
+  $(inputGroup).append(input).append(spanBtn)
+  $(spanBtn).append(btn)
+  $(input).val(value)
+
+  var aEdit = $(item.dom.divEdit).find('a')
+  if (item.typeInfo && item.typeInfo.writeOnly) {
+    $(ret).hide()
+    $(aEdit).hide()
+  } else {
+    $(inputGroup).hide()
+    $(aEdit).click(function() {
+      if ($(inputGroup).is(':hidden')) {
+        $(inputGroup).show()
+        $(ret).hide()
+      } else {
+        $(inputGroup).hide()
+        $(ret).show()
+      }
+    })
+  }
+
+  $(div).append(ret).append(inputGroup)
+
+  if (typeInfo && typeInfo.password && typeInfo.confirm) {
+    $(div).append(inputGroup2)
+  }
+
+  return div
+}
+
 SAInfo.Datetime = function(self, item, value) {
   // 目前仅支持只读
   var date = new Date(value)
@@ -325,6 +376,7 @@ SAInfo.itemTypeDom = {
   Boolean: SAInfo.Boolean,
   Number: SAInfo.Number,
   Text: SAInfo.Text,
+  Date: SAInfo.Date,
   Datetime: SAInfo.Datetime,
   File: SAInfo.File,
   Select: SAInfo.Select,
@@ -506,7 +558,7 @@ SAInfo.initItem = function(self, item) {
   $(b).append(item.caption ? item.caption : item.name)
   $(divCaption).append(b)
 
-  if (!item.readOnly) {
+  if ((!item.readOnly) && self.info.updateAttr) {
     var iconEdit = getDom.IconEdit()
     var a = getDom.A('', 'javascript:void(0)', 'text-info')
     $(a).append(iconEdit)

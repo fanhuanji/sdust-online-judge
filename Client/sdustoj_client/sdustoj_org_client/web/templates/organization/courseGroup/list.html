@@ -1,0 +1,36 @@
+{% extends "organization/orgAdminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}课程组{% endblock %}
+
+{% block nav_course_group %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="courseGroup"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.DRFTable({
+  id: 'courseGroup',
+  title: '课程组',
+  url: "{% url 'admin-course-group-list' oid %}",
+  search: true,
+  filters: [
+    { name: 'creator', type: 'text', placeholder: '请输入创建者用户名', caption: '创建者' },
+    { name: 'updater', type: 'text', placeholder: '请输入更新者用户名', caption: '更新者' }
+  ],
+  columns: [
+    { name: 'id', caption: 'ID', sort: true, ordering: 1, type: 'Link', typeInfo: { base_url: '{% url 'web-course-groups' oid %}', key: 'id' } },
+    { name: 'caption', caption: '课程组名称', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-course-groups' oid %}', key: 'id' } },
+    { name: "available", caption: "可用", type: 'Boolean' },
+  ],
+  createURL: '{% url 'web-course-groups-create' oid %}'
+})
+
+</script>
+{% endblock %}

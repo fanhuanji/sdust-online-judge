@@ -1,0 +1,10 @@
+{% extends "adminBasic.html" %}
+{% load staticfiles %}
+
+{% block main_nav_my_org %}active{% endblock %}
+
+{% block sub_nav %}
+<li class="nav-item">
+  <a class="nav-link {% block nav_org %}{% endblock %}" href="{% url 'web-my-orgs' %}">我所在的机构</a>
+</li>
+{% endblock %}

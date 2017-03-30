@@ -1,8 +1,10 @@
 {% extends "adminBasic.html" %}
 {% load staticfiles %}
 
+{% block main_nav_org %}active{% endblock %}
+
 {% block sub_nav %}
 <li class="nav-item">
-  <a class="nav-link {% block nav_org %}{% endblock %}" href="{% url 'web-orgs' %}">所有机构</a>
+  <a class="nav-link {% block nav_org %}{% endblock %}" href="{% url 'web-orgs' %}">{% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}所有机构{% else %}我管理的机构{% endif %}</a>
 </li>
 {% endblock %}

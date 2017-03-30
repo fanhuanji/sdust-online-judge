@@ -17,7 +17,7 @@
 <script>
 SATable.DRFTable({
   id: 'allOrg',
-  title: '所有机构',
+  title: '机构',
   url: "{% url 'admin-organization-list' %}",
   search: true,
   filters: [
@@ -31,9 +31,13 @@ SATable.DRFTable({
     { name: 'parent', caption: '上级机构', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-orgs' %}', key: 'parent' } },
     { name: 'create_time', caption: '注册时间', sort: true, type: 'Datetime' },
     { name: 'update_time', caption: '最后更新', sort: true, type: 'Datetime' },
+    {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
     { name: "available", caption: "可用", type: 'Boolean' },
+    {% endif %}
   ],
+  {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
   createURL: '{% url 'web-orgs-create' %}'
+  {% endif %}
 })
 
 </script>

@@ -1,7 +1,7 @@
 # -*- encoding=utf-8 -*
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedSimpleRouter
-from .views import UserViewSets, OrgViewSets
+from .views import UserViewSets, OrgViewSets, CourseViewSets
 
 admin_router = DefaultRouter()
 
@@ -42,10 +42,31 @@ admin_org_router.register(
 admin_org_router.register(
     r'students', OrgViewSets.Student.Instance.StudentAdminViewSet, base_name='admin-student'
 )
+admin_org_router.register(
+    r'course-meta', CourseViewSets.CourseMeta.CourseMetaAdminViewSet, base_name='admin-course-meta'
+)
+admin_org_router.register(
+    r'courses', CourseViewSets.Course.CourseEduViewSet, base_name='admin-course-readonly'
+)
+admin_org_router.register(
+    r'course-groups', CourseViewSets.CourseGroup.CourseGroupAdminViewSet, base_name='admin-course-group'
+)
+
+admin_course_meta_router = NestedSimpleRouter(admin_org_router, r'course-meta', lookup='course_meta')
+admin_course_meta_router.register(
+    r'courses', CourseViewSets.Course.CourseMetaAdminViewSet, base_name='admin-course'
+)
+admin_course_group_router = NestedSimpleRouter(admin_org_router, r'course-groups', lookup='course_group')
+admin_course_group_router.register(
+    r'course-relations', CourseViewSets.CourseGroup.CourseGroupRelationAdminViewSet,
+    base_name='admin-course-group-relation'
+)
 
 admin_url_patterns = []
 admin_url_patterns += admin_router.urls
 admin_url_patterns += admin_org_router.urls
+admin_url_patterns += admin_course_meta_router.urls
+admin_url_patterns += admin_course_group_router.urls
 
 
 router = DefaultRouter()
@@ -57,6 +78,12 @@ router.register(
 )
 router.register(
     r'personal-info', UserViewSets.Self.UserViewSet, base_name='api-personal-info'
+)
+router.register(
+    r'organizations', OrgViewSets.Organization.List.OrganizationViewSet, base_name='api-organization'
+)
+router.register(
+    r'organizations', OrgViewSets.Organization.Instance.OrganizationViewSet, base_name='api-organization'
 )
 
 api_url_patterns = []

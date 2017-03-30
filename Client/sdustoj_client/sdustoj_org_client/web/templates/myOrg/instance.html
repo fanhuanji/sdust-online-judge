@@ -1,0 +1,46 @@
+{% extends "myOrg/orgAdminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}机构信息{% endblock %}
+
+{% block nav_org %}active{% endblock %}
+
+{% block nav_basic_info %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="col-12">
+  <div class="container">
+    <div id="orgInfo"></div>
+  </div>
+  <br />
+  <br />
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxInfo({
+  id: 'orgInfo',
+  title: '机构信息',
+  getMethod: 'GET',
+  getURL: '{% url 'api-organization-detail' oid %}',
+  items: [
+    { name: 'id', caption: '机构ID', type: 'Number', readOnly: true },
+    { name: 'name', caption: '机构名', type: 'Text', typeInfo: { max_length: 150 } },
+    { name: 'caption', caption: '对外显示名称', type: 'Text', typeInfo: { max_length: 150 } },
+    { name: 'parent', caption: '上级机构ID', type: 'Number' },
+    'Divide',
+    { name: 'create_time', caption: '创建时间', type: 'Datetime', readOnly: true },
+    { name: 'update_time', caption: '更新时间', type: 'Datetime', readOnly: true },
+    'Divide',
+    { name: 'introduction', caption: '信息简介', type: 'Text', typeInfo: { article: true, max_length: 1024 } },
+    'Divide',
+    { name: 'number_organizations', caption: '下级机构数量', type: 'Number', readOnly: true },
+    { name: 'number_admins', caption: '教务管理员数量', type: 'Number', readOnly: true },
+    { name: 'number_students', caption: '学生数量', type: 'Number', readOnly: true },
+    { name: 'number_teachers', caption: '教师数量', type: 'Number', readOnly: true }
+  ]
+
+})
+</script>
+{% endblock %}

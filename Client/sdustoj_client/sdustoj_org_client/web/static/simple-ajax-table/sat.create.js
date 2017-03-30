@@ -36,6 +36,28 @@ SAForm.Text = function(self, item) {
 
   return div
 }
+
+SAForm.Date = function(self, item) {
+  var getDom = SATable.getDom
+  var typeInfo = item.typeInfo
+
+  var div = getDom.Div('form-group row')
+  var label = $('<label class="col-md-3 col-form-label">' + item.caption + '</label>')
+  var divInput = SATable.getDom.Div('col-md-9 input-append date form_datetime')
+  var input = getDom.Input(item.name, '')
+  $(input).attr('readonly', 'readonly').datetimepicker({
+    format: 'yyyy-mm-dd',
+    minView: 2,
+    maxView: 4
+  })
+
+
+  $(div).append(label).append(divInput)
+  $(divInput).append(input)
+
+  return div
+}
+
 SAForm.Select = function(self, item) {
   var typeInfo = item.typeInfo
   var options = typeInfo.options ? typeInfo.options : []
@@ -151,6 +173,7 @@ SAForm.requestSelectData = function(self, selectDom, item) {
 SAForm.inputDomChoice = {
   Boolean: SAForm.Boolean,
   Text: SAForm.Text,
+  Date: SAForm.Date,
   Select: SAForm.Select,
   Number: SAForm.Number,
   Email: SAForm.Email,

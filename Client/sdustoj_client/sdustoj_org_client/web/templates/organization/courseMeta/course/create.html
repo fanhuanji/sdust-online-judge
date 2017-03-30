@@ -1,0 +1,51 @@
+{% extends "organization/courseMeta/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}创建课程{% endblock %}
+
+{% block nav_course %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="courseMeta"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxForm({
+  id: 'courseMeta',
+  method: 'POST',
+  toSuccess: '{% url 'web-courses' oid mid %}',
+  url: '{% url 'admin-course-list' oid mid %}',
+  items: [
+    {
+      name: 'available',
+      caption: '可用',
+      type: 'Boolean',
+      defaultTrue: true
+    },
+    {
+      name: 'caption',
+      caption: '课程名称',
+      type: 'Text',
+      typeInfo: {
+        max_length: 150
+      }
+    },
+    {
+      name: 'start_time',
+      caption: '开始时间',
+      type: 'Date'
+    },
+    {
+      name: 'end_time',
+      caption: '结束时间',
+      type: 'Date'
+    },
+  ]
+})
+</script>
+{% endblock %}

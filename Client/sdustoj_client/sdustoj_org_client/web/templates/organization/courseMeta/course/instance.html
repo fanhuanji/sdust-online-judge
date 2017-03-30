@@ -1,0 +1,48 @@
+{% extends "organization/courseMeta/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}课程信息{% endblock %}
+
+{% block nav_course %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="col-12">
+  <div class="container">
+    <div id="course"></div>
+  </div>
+  <br />
+  <br />
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxInfo({
+  id: 'course',
+  title: '课程信息',
+  getMethod: 'GET',
+  updateMethod: 'PATCH',
+  removeMethod: 'DELETE',
+  getURL: '{% url 'admin-course-detail' oid mid cid %}',
+  updateURL: '{% url 'admin-course-detail' oid mid cid %}',
+  removeURL: '{% url 'admin-course-detail' oid mid cid %}',
+  removeToURL: '{% url 'web-courses' oid mid %}',
+  items: [
+    { name: 'id', caption: 'ID', type: 'Number', readOnly: true },
+    { name: 'caption', caption: '课程名称', type: 'Text', typeInfo: { max_length: 150 } },
+    'Divide',
+    { name: 'creator', caption: '创建者', type: 'Text', readOnly: true },
+    { name: 'create_time', caption: '创建时间', type: 'Datetime', readOnly: true },
+    { name: 'updater', caption: '更新者', type: 'Text', readOnly: true },
+    { name: 'update_time', caption: '更新时间', type: 'Datetime', readOnly: true },
+    'Divide',
+    { name: 'available', caption: '对外可用', type: 'Boolean' },
+    { name: 'deleted', caption: '是否废弃', type: 'Boolean' },
+    'Divide',
+    { name: 'start_time', caption: '开始时间', type: 'Date' },
+    { name: 'end_time', caption: '结束时间', type: 'Date' },
+  ]
+
+})
+</script>
+{% endblock %}

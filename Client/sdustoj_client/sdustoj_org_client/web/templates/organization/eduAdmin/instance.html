@@ -11,9 +11,11 @@
 <div class="col-12">
   <div class="container">
     <div id="eduInfo"></div>
+    {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
     <br>
     <hr>
     <div id="eduPwd"></div>
+    {% endif %}
   </div>
   <br />
   <br />
@@ -26,12 +28,14 @@ SATable.SimpleAjaxInfo({
   id: 'eduInfo',
   title: '教务管理员',
   getMethod: 'GET',
+  getURL: '{% url 'admin-edu-admin-detail' oid eid %}',
+  {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
   updateMethod: 'PATCH',
   removeMethod: 'DELETE',
-  getURL: '{% url 'admin-edu-admin-detail' oid eid %}',
   updateURL: '{% url 'admin-edu-admin-detail' oid eid %}',
   removeURL: '{% url 'admin-edu-admin-detail' oid eid %}',
   removeToURL: '{% url 'web-edu-admins' oid %}',
+  {% endif %}
   items: [
     { name: 'id', caption: 'ID', type: 'Number', readOnly: true },
     { name: 'username', caption: '用户名', type: 'Text', readOnly: true },
@@ -52,15 +56,18 @@ SATable.SimpleAjaxInfo({
     { name: 'create_time', caption: '创建时间', type: 'Datetime', readOnly: true },
     { name: 'updater', caption: '更新者', type: 'Text', readOnly: true },
     { name: 'update_time', caption: '更新时间', type: 'Datetime', readOnly: true },
+    {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
     'Divide',
     { name: 'available', caption: '对外可用', type: 'Boolean' },
     { name: 'deleted', caption: '是否废弃', type: 'Boolean' },
+    {% endif %}
     'Divide',
     { name: 'phone', caption: '电话', type: 'Text', typeInfo: { max_length: 16 } },
     { name: 'email', caption: '邮箱', type: 'Email', typeInfo: { max_length: 150 } }
   ]
 
 })
+{% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
 SATable.SimpleAjaxInfo({
   id: 'eduPwd',
   title: '修改密码',
@@ -73,5 +80,6 @@ SATable.SimpleAjaxInfo({
   ]
 
 })
+{% endif %}
 </script>
 {% endblock %}

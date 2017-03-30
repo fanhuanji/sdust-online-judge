@@ -29,9 +29,13 @@ SATable.DRFTable({
     { name: 'name', caption: '姓名', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-edu-admins' oid %}', key: 'id' } },
     { name: 'username', caption: '用户名', sort: true, type: 'Text' },
     { name: 'phone', caption: '电话', sort: true, type: 'Text' },
+    {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
     { name: "available", caption: "可用", type: 'Boolean' },
+    {% endif %}
   ],
+  {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
   createURL: '{% url 'web-edu-admins-create' oid %}'
+  {% endif %}
 })
 
 </script>

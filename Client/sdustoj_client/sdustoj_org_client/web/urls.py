@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from .views import MainPages, UserPages, SelfPages, OrgPages
+from .views import MainPages, UserPages, SelfPages, OrgPages, CoursePages
 
 
 personal_patterns = [
@@ -38,6 +38,37 @@ student_patterns = [
     url(r'^(\d+)/', OrgPages.Student.instance, name='web-students-instance')
 ]
 
+course_patterns = [
+    url(r'^$', CoursePages.Course.list, name='web-courses'),
+    url(r'^create/', CoursePages.Course.create, name='web-courses-create'),
+    url(r'^(\d+)/', CoursePages.Course.instance, name='web-courses-instance')
+]
+
+course_readonly_patterns = [
+    url(r'^$', CoursePages.CourseReadonly.list, name='web-course-readonly'),
+    url(r'^(\d+)/$', CoursePages.CourseReadonly.instance, name='web-course-readonly-instance'),
+]
+
+course_meta_patterns = [
+    url(r'^$', CoursePages.CourseMeta.list, name='web-course-meta'),
+    url(r'^create/', CoursePages.CourseMeta.create, name='web-course-meta-create'),
+    url(r'^(\d+)/$', CoursePages.CourseMeta.instance, name='web-course-meta-instance'),
+    url(r'^(\d+)/courses/', include(course_patterns)),
+]
+
+course_group_relation_patterns = [
+    url(r'^$', CoursePages.CourseGroupRelation.list, name='web-course-group-relations'),
+    url(r'^create/', CoursePages.CourseGroupRelation.create, name='web-course-group-relations-create'),
+    url(r'^(\d+)/$', CoursePages.CourseGroupRelation.instance, name='web-course-group-relations-instance'),
+]
+
+course_group_patterns = [
+    url(r'^$', CoursePages.CourseGroup.list, name='web-course-groups'),
+    url(r'^create/', CoursePages.CourseGroup.create, name='web-course-groups-create'),
+    url(r'^(\d+)/$', CoursePages.CourseGroup.instance, name='web-course-groups-instance'),
+    url(r'^(\d+)/relations/', include(course_group_relation_patterns)),
+]
+
 org_admin_patterns = [
     url(r'^$', OrgPages.Organization.list, name='web-orgs'),
     url(r'^create/', OrgPages.Organization.create, name='web-orgs-create'),
@@ -45,6 +76,14 @@ org_admin_patterns = [
     url(r'^(\d+)/edu-admins/', include(edu_admin_patterns)),
     url(r'^(\d+)/teachers/', include(teacher_patterns)),
     url(r'^(\d+)/students/', include(student_patterns)),
+    url(r'^(\d+)/courses/', include(course_readonly_patterns)),
+    url(r'^(\d+)/course-meta/', include(course_meta_patterns)),
+    url(r'^(\d+)/course-groups/', include(course_group_patterns)),
+]
+
+my_org_patterns = [
+    url(r'^$', OrgPages.MyOrganization.list, name='web-my-orgs'),
+    url(r'^(\d+)/$', OrgPages.MyOrganization.instance, name='web-my-orgs-instance'),
 ]
 
 url_patterns = [
@@ -53,5 +92,6 @@ url_patterns = [
     url(r'^personal/', include(personal_patterns)),
     url(r'^users/', include(user_patterns)),
     url(r'^admins/', include(admin_patterns)),
+    url(r'^my-organizations/', include(my_org_patterns)),
     url(r'^organizations/', include(org_admin_patterns)),
 ]

@@ -18,19 +18,19 @@
     <a class="navbar-brand hidden-sm-up">&nbsp</a>
     <div class="collapse navbar-collapse" id="navbarCollapse">
       <ul class="navbar-nav mr-auto">
-        {% if 'ROOT' in user_info.identities or 'USER_ADMIN' in user_info.identities %}
-        <li class="nav-item">
+        {% if user_info.user.is_staff and 'ROOT' in user_info.identities or 'USER_ADMIN' in user_info.identities %}
+        <li class="nav-item {% block main_nav_user %}{% endblock %}">
           <a class="nav-link" href="{% url 'web-admins' %}">用户管理</a>
         </li>
         {% endif %}
-        {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities %}
-        <li class="nav-item">
+        {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities or 'EDU_ADMIN' in user_info.identities %}
+        <li class="nav-item {% block main_nav_org %}{% endblock %}">
           <a class="nav-link" href="{% url 'web-orgs' %}">机构管理</a>
         </li>
         {% endif %}
-        {% if 'ROOT' in user_info.identities or 'ORG_ADMIN' in user_info.identities or 'EDU_ADMIN' in user_info.identities %}
-        <li class="nav-item">
-          <a class="nav-link" href="#">我的机构</a>
+        {% if 'EDU_ADMIN' in user_info.identities or 'TEACHER' in user_info.identities or 'STUDENT' in user_info.identities %}
+        <li class="nav-item {% block main_nav_my_org %}{% endblock %}">
+          <a class="nav-link" href="{% url 'web-my-orgs' %}">我的机构</a>
         </li>
         {% endif %}
       </ul>

@@ -1,0 +1,6 @@
+{% extends "organization/orgAdminBasic.html" %}
+{% load staticfiles %}
+
+{% block sub_course_nav %}
+<a class="nav-link {% block nav_course_readonly_instance %}{% endblock %}" href="{% url 'web-course-readonly-instance' oid cid %}">&nbsp;&nbsp;&nbsp;&nbsp;课程信息</a>
+{% endblock %}

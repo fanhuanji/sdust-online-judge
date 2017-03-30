@@ -1,6 +1,8 @@
 {% extends "adminBasic.html" %}
 {% load staticfiles %}
 
+{% block main_nav_user %}active{% endblock %}
+
 {% block sub_nav %}
 <li class="nav-item">
   <a class="nav-link {% block nav_site %}{% endblock %}" href="{% url 'web-admins' %}">网站管理人员</a>

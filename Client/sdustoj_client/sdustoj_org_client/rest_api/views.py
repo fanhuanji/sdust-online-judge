@@ -93,6 +93,10 @@ class Utils:
                     extra_data[self.parent_related_name] = parent
 
             class NestedResourceListMixin(ResourceListMixin):
+                def __init__(self, *args, **kwargs):
+                    super_init = getattr(super(), '__init__')
+                    super_init(*args, **kwargs)
+
                 def list(self, request, *args, **kwargs):
                     set_list_queryset = getattr(self, 'set_list_queryset')
                     set_list_queryset(kwargs)
@@ -103,7 +107,11 @@ class Utils:
                     set_parent(kwargs)
                     return super().create(request, *args, **kwargs)
 
-            class NestedResourceInstanceMixin(ResourceInstanceMixin):
+            class NestedResourceInstanceReadOnlyMixin(mixins.RetrieveModelMixin):
+                def __init__(self, *args, **kwargs):
+                    super_init = getattr(super(), '__init__')
+                    super_init(*args, **kwargs)
+
                 def retrieve(self, request, *args, **kwargs):
                     get_parent = getattr(self, 'get_parent')
                     parent = get_parent(kwargs)
@@ -118,6 +126,108 @@ class Utils:
                     get_serializer = getattr(self, 'get_serializer')
                     serializer = get_serializer(instance)
                     return response.Response(serializer.data)
+
+            class NestedResourceInstanceMixin(ResourceInstanceMixin):
+                def __init__(self, *args, **kwargs):
+                    super_init = getattr(super(), '__init__')
+                    super_init(*args, **kwargs)
+
+                def retrieve(self, request, *args, **kwargs):
+                    get_parent = getattr(self, 'get_parent')
+                    parent = get_parent(kwargs)
+                    get_object = getattr(self, 'get_object')
+                    instance = get_object()
+
+                    parent_name = getattr(self, 'parent_related_name')
+                    ins_parent = getattr(instance, parent_name)
+                    if ins_parent != parent:
+                        raise exceptions.NotFound
+
+                    get_serializer = getattr(self, 'get_serializer')
+                    serializer = get_serializer(instance)
+                    return response.Response(serializer.data)
+
+            class OrgMixin(object):
+                identity = models.IdentityChoices.edu_admin
+
+                def check_org(self, request, **kwargs):
+                    user = request.user
+                    profile = user.profile
+                    id_str = self.identity
+                    if id_str in profile.identities:
+                        oid = int(kwargs['organization_id'])
+                        if oid not in profile.identities[id_str]:
+                            raise exceptions.NotFound
+                        else:
+                            get_object_or_404(
+                                getattr(models.Organization, 'objects').filter(available=True, deleted=False), id=oid
+                            )
+
+                def get_org(self, request, **kwargs):
+                    user = request.user
+                    profile = user.profile
+                    id_str = self.identity
+                    oid = int(kwargs['organization_id'])
+                    if id_str in profile.identities:
+                        if oid not in profile.identities[models.IdentityChoices.edu_admin]:
+                            raise exceptions.NotFound
+                    return get_object_or_404(
+                        getattr(models.Organization, 'objects').filter(available=True, deleted=False), id=oid
+                    )
+
+            class OrgListReadOnlyMixin(mixins.ListModelMixin):
+                def __init__(self, *args, **kwargs):
+                    super_init = getattr(super(), '__init__')
+                    super_init(*args, **kwargs)
+
+                def list(self, request, *args, **kwargs):
+                    check_org = getattr(self, 'check_org')
+                    check_org(request, **kwargs)
+                    return super().list(request, *args, **kwargs)
+
+            class OrgListMixin(NestedResourceListMixin):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                def list(self, request, *args, **kwargs):
+                    check_org = getattr(self, 'check_org')
+                    check_org(request, **kwargs)
+                    return super().list(request, *args, **kwargs)
+
+                def create(self, request, *args, **kwargs):
+                    get_org = getattr(self, 'get_org')
+                    org = get_org(request, **kwargs)
+                    extra_data = getattr(self, 'extra_data')
+                    extra_data['organization'] = org
+                    return super().create(request, *args, **kwargs)
+
+            class OrgInstanceReadOnlyMixin(NestedResourceInstanceReadOnlyMixin):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                def retrieve(self, request, *args, **kwargs):
+                    check_org = getattr(self, 'check_org')
+                    check_org(request, **kwargs)
+                    return super().retrieve(request, *args, **kwargs)
+
+            class OrgInstanceMixin(NestedResourceInstanceMixin):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                def retrieve(self, request, *args, **kwargs):
+                    check_org = getattr(self, 'check_org')
+                    check_org(request, **kwargs)
+                    return super().retrieve(request, *args, **kwargs)
+
+                def update(self, request, *args, **kwargs):
+                    check_org = getattr(self, 'check_org')
+                    check_org(request, **kwargs)
+                    return super().update(request, *args, **kwargs)
+
+                def destroy(self, request, *args, **kwargs):
+                    check_org = getattr(self, 'check_org')
+                    check_org(request, **kwargs)
+                    return super().destroy(request, *args, **kwargs)
 
         class ListModelViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
             pass
@@ -138,6 +248,15 @@ class Utils:
                               viewsets.GenericViewSet, Mixin.ResourceMixin):
             pass
 
+        class ResourceListReadOnlyViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+            pass
+
+        class ResourceInstanceReadOnlyViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+            pass
+
+        class ResourceReadOnlyViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+            pass
+
         class NestedResourceListViewSet(Mixin.ExtraDataMixin,
                                         Mixin.NestedResourceListMixin,
                                         viewsets.GenericViewSet,
@@ -146,10 +265,10 @@ class Utils:
             pass
 
         class NestedResourceInstanceViewSet(Mixin.ExtraDataMixin,
-                                          Mixin.NestedResourceInstanceMixin,
-                                          viewsets.GenericViewSet,
-                                          Mixin.ResourceMixin,
-                                          Mixin.NestedMixin):
+                                            Mixin.NestedResourceInstanceMixin,
+                                            viewsets.GenericViewSet,
+                                            Mixin.ResourceMixin,
+                                            Mixin.NestedMixin):
             pass
 
         class NestedResourceViewSet(Mixin.ExtraDataMixin,
@@ -160,6 +279,40 @@ class Utils:
                                     Mixin.NestedMixin):
             pass
 
+        class OrgListViewSet(Mixin.ExtraDataMixin,
+                             Mixin.OrgListMixin,
+                             viewsets.GenericViewSet,
+                             Mixin.ResourceMixin,
+                             Mixin.NestedMixin,
+                             Mixin.OrgMixin):
+            pass
+
+        class OrgInstanceViewSet(Mixin.ExtraDataMixin,
+                                 Mixin.OrgInstanceMixin,
+                                 viewsets.GenericViewSet,
+                                 Mixin.ResourceMixin,
+                                 Mixin.NestedMixin,
+                                 Mixin.OrgMixin):
+            pass
+
+        class OrgViewSet(Mixin.ExtraDataMixin,
+                         Mixin.OrgListMixin,
+                         Mixin.OrgInstanceMixin,
+                         viewsets.GenericViewSet,
+                         Mixin.ResourceMixin,
+                         Mixin.NestedMixin,
+                         Mixin.OrgMixin):
+            pass
+
+        class OrgReadOnlyViewSet(Mixin.ExtraDataMixin,
+                                 Mixin.OrgListReadOnlyMixin,
+                                 Mixin.OrgInstanceReadOnlyMixin,
+                                 viewsets.GenericViewSet,
+                                 Mixin.ResourceMixin,
+                                 Mixin.NestedMixin,
+                                 Mixin.OrgMixin):
+            pass
+
 
 class UserViewSets(object):
     """
@@ -168,7 +321,7 @@ class UserViewSets(object):
     class Admin(object):
         class List(object):
             class AdminAdminViewSet(Utils.ViewSets.ResourceListViewSet):
-                queryset = models.UserProfile.objects.filter(is_staff=True).order_by('user')
+                queryset = getattr(models.UserProfile, 'objects').filter(is_staff=True).order_by('user')
                 serializer_class = serializers.UserSerializers.Admin.ListAdmin
                 permission_classes = (permissions.IsUserAdmin, )
                 filter_class = filters.UserFilters.UserProfile
@@ -185,7 +338,7 @@ class UserViewSets(object):
 
         class Instance(object):
             class AdminAdminViewSet(Utils.ViewSets.ResourceInstanceViewSet):
-                queryset = models.UserProfile.objects.filter(is_staff=True).order_by('user')
+                queryset = getattr(models.UserProfile, 'objects').filter(is_staff=True).order_by('user')
                 serializer_class = serializers.UserSerializers.Admin.InstanceAdmin
                 permission_classes = (permissions.IsUserAdmin, )
                 lookup_field = 'username'
@@ -200,7 +353,7 @@ class UserViewSets(object):
     class User(object):
         class List(object):
             class UserAdminViewSet(Utils.ViewSets.ResourceListViewSet):
-                queryset = models.UserProfile.objects.order_by('user')
+                queryset = getattr(models.UserProfile, 'objects').order_by('user')
                 serializer_class = serializers.UserSerializers.User.ListAdmin
                 permission_classes = (permissions.IsUserAdmin, )
                 filter_class = filters.UserFilters.UserProfile
@@ -217,7 +370,7 @@ class UserViewSets(object):
 
         class Instance(object):
             class UserAdminViewSet(Utils.ViewSets.ResourceInstanceViewSet):
-                queryset = models.UserProfile.objects.order_by('user')
+                queryset = getattr(models.UserProfile, 'objects').order_by('user')
                 serializer_class = serializers.UserSerializers.User.InstanceAdmin
                 permission_classes = (permissions.IsUserAdmin, )
                 lookup_field = 'username'
@@ -234,7 +387,7 @@ class UserViewSets(object):
         用户用于查看和修改自己信息的ViewSet。
         """
         class UserViewSet(Utils.ViewSets.InstanceModelViewSet):
-            queryset = models.UserProfile
+            queryset = getattr(models.UserProfile, 'objects')
             serializer_class = serializers.UserSerializers.Self.Instance
             permission_classes = (permissions.IsSelf, )
             lookup_field = 'username'
@@ -291,14 +444,23 @@ class OrgViewSets(object):
     class Organization(object):
         class List(object):
             class OrganizationAdminViewSet(Utils.ViewSets.ResourceListViewSet):
-                queryset = models.Organization.objects.exclude(name='ROOT').order_by('id')
+                queryset = getattr(models.Organization, 'objects').exclude(name='ROOT').order_by('id')
                 serializer_class = serializers.OrgSerializers.Organization.ListAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.EduReadOnly, )
                 filter_class = filters.OrganizationFilters.Organization
                 search_fields = ('name', 'caption', )
                 ordering_fields = ('id', 'name', 'caption', 'parent',
                                    'number_organizations', 'number_students', 'number_teachers', 'number_admins')
                 lookup_field = 'id'
+
+                def list(self, request, *args, **kwargs):
+                    user = request.user
+                    if models.IdentityChoices.edu_admin in user.profile.identities:
+                        self.queryset = getattr(models.Organization, 'objects').filter(
+                            edu_admins__user=user
+                        ).exclude(name='ROOT').filter(available=True, deleted=False).order_by('id')
+                        self.serializer_class = serializers.OrgSerializers.Organization.ListEdu
+                    return super().list(request, *args, **kwargs)
 
                 def perform_create(self, serializer):
                     instance = super().perform_create(serializer)
@@ -306,12 +468,42 @@ class OrgViewSets(object):
                     instance.parent.save()
                     return instance
 
+            class OrganizationViewSet(Utils.ViewSets.ResourceReadOnlyViewSet):
+                queryset = getattr(models.Organization, 'objects').exclude(name='ROOT').order_by('id')
+                serializer_class = serializers.OrgSerializers.Organization.List
+                permission_classes = (permissions_.IsAuthenticated, )
+                filter_class = filters.OrganizationFilters.Organization
+                search_fields = ('name', 'caption',)
+                ordering_fields = ('id', 'name', 'caption', 'parent',
+                                   'number_organizations', 'number_students', 'number_teachers', 'number_admins')
+                lookup_field = 'id'
+
+                def list(self, request, *args, **kwargs):
+                    user = request.user
+                    edu_orgs = getattr(models.Organization, 'objects').filter(edu_admins__user=user)
+                    teacher_orgs = getattr(models.Organization, 'objects').filter(teachers__user=user)
+                    student_orgs = getattr(models.Organization, 'objects').filter(students__user=user)
+                    orgs = edu_orgs | teacher_orgs | student_orgs
+                    orgs = orgs.exclude(name='ROOT').filter(
+                        available=True, deleted=False).order_by('id')
+                    self.queryset = orgs
+                    return super().list(request, *args, **kwargs)
+
         class Instance(object):
             class OrganizationAdminViewSet(Utils.ViewSets.ResourceInstanceViewSet):
-                queryset = models.Organization.objects.exclude(name='ROOT')
+                queryset = getattr(models.Organization, 'objects').exclude(name='ROOT')
                 serializer_class = serializers.OrgSerializers.Organization.InstanceAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.EduReadOnly, )
                 lookup_field = 'id'
+
+                def retrieve(self, request, *args, **kwargs):
+                    user = request.user
+                    if models.IdentityChoices.edu_admin in user.profile.identities:
+                        self.queryset = getattr(models.Organization, 'objects').filter(
+                            edu_admins__user=user
+                        ).exclude(name='ROOT').filter(available=True, deleted=False).order_by('id')
+                        self.serializer_class = serializers.OrgSerializers.Organization.InstanceEdu
+                    return super().retrieve(request, *args, **kwargs)
 
                 def perform_update(self, serializer):
                     instance = serializer.instance
@@ -327,14 +519,31 @@ class OrgViewSets(object):
                     instance.parent.save()
                     super().perform_destroy(instance)
 
+            class OrganizationViewSet(Utils.ViewSets.ResourceInstanceReadOnlyViewSet):
+                queryset = getattr(models.Organization, 'objects').exclude(name='ROOT')
+                serializer_class = serializers.OrgSerializers.Organization.InstanceAdmin
+                permission_classes = (permissions.EduReadOnly, )
+                lookup_field = 'id'
+
+                def retrieve(self, request, *args, **kwargs):
+                    user = request.user
+                    edu_orgs = getattr(models.Organization, 'objects').filter(edu_admins__user=user)
+                    teacher_orgs = getattr(models.Organization, 'objects').filter(teachers__user=user)
+                    student_orgs = getattr(models.Organization, 'objects').filter(students__user=user)
+                    orgs = edu_orgs | teacher_orgs | student_orgs
+                    orgs = orgs.exclude(name='ROOT').filter(
+                        available=True, deleted=False).order_by('id')
+                    self.queryset = orgs
+                    return super().retrieve(request, *args, **kwargs)
+
     class EduAdmin(object):
         class List(object):
-            class EduAdminAdminViewSet(Utils.ViewSets.NestedResourceListViewSet):
-                queryset = models.EduAdmin.objects
+            class EduAdminAdminViewSet(Utils.ViewSets.OrgListViewSet):
+                queryset = getattr(models.EduAdmin, 'objects')
                 serializer_class = serializers.OrgSerializers.EduAdmin.ListAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.EduReadOnly, )
 
-                parent_queryset = models.Organization.objects
+                parent_queryset = getattr(models.Organization, 'objects')
                 parent_lookup = 'organization_id'
                 parent_related_name = 'organization'
                 parent_pk_field = 'id'
@@ -350,13 +559,13 @@ class OrgViewSets(object):
                     return instance
 
         class Instance(object):
-            class EduAdminAdminViewSet(Utils.ViewSets.NestedResourceInstanceViewSet):
-                queryset = models.EduAdmin.objects
+            class EduAdminAdminViewSet(Utils.ViewSets.OrgInstanceViewSet):
+                queryset = getattr(models.EduAdmin, 'objects')
                 serializer_class = serializers.OrgSerializers.EduAdmin.InstanceAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.EduReadOnly, )
                 lookup_field = 'id'
 
-                parent_queryset = models.Organization.objects
+                parent_queryset = getattr(models.Organization, 'objects')
                 parent_lookup = 'organization_id'
                 parent_related_name = 'organization'
                 parent_pk_field = 'id'
@@ -380,12 +589,12 @@ class OrgViewSets(object):
 
     class Teacher(object):
         class List(object):
-            class TeacherAdminViewSet(Utils.ViewSets.NestedResourceListViewSet):
-                queryset = models.Teacher.objects
+            class TeacherAdminViewSet(Utils.ViewSets.OrgListViewSet):
+                queryset = getattr(models.Teacher, 'objects')
                 serializer_class = serializers.OrgSerializers.Teacher.ListAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.IsEduAdmin, )
 
-                parent_queryset = models.Organization.objects
+                parent_queryset = getattr(models.Organization, 'objects')
                 parent_lookup = 'organization_id'
                 parent_related_name = 'organization'
                 parent_pk_field = 'id'
@@ -401,13 +610,13 @@ class OrgViewSets(object):
                     return instance
 
         class Instance(object):
-            class TeacherAdminViewSet(Utils.ViewSets.NestedResourceInstanceViewSet):
-                queryset = models.Teacher.objects
+            class TeacherAdminViewSet(Utils.ViewSets.OrgInstanceViewSet):
+                queryset = getattr(models.Teacher, 'objects')
                 serializer_class = serializers.OrgSerializers.Teacher.InstanceAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.IsEduAdmin, )
                 lookup_field = 'id'
 
-                parent_queryset = models.Organization.objects
+                parent_queryset = getattr(models.Organization, 'objects')
                 parent_lookup = 'organization_id'
                 parent_related_name = 'organization'
                 parent_pk_field = 'id'
@@ -431,12 +640,12 @@ class OrgViewSets(object):
 
     class Student(object):
         class List(object):
-            class StudentAdminViewSet(Utils.ViewSets.NestedResourceListViewSet):
-                queryset = models.Student.objects
+            class StudentAdminViewSet(Utils.ViewSets.OrgListViewSet):
+                queryset = getattr(models.Student, 'objects')
                 serializer_class = serializers.OrgSerializers.Student.ListAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.IsEduAdmin, )
 
-                parent_queryset = models.Organization.objects
+                parent_queryset = getattr(models.Organization, 'objects')
                 parent_lookup = 'organization_id'
                 parent_related_name = 'organization'
                 parent_pk_field = 'id'
@@ -452,13 +661,13 @@ class OrgViewSets(object):
                     return instance
 
         class Instance(object):
-            class StudentAdminViewSet(Utils.ViewSets.NestedResourceInstanceViewSet):
-                queryset = models.Student.objects
+            class StudentAdminViewSet(Utils.ViewSets.OrgInstanceViewSet):
+                queryset = getattr(models.Student, 'objects')
                 serializer_class = serializers.OrgSerializers.Student.InstanceAdmin
-                permission_classes = (permissions.IsOrgAdmin, )
+                permission_classes = (permissions.IsEduAdmin, )
                 lookup_field = 'id'
 
-                parent_queryset = models.Organization.objects
+                parent_queryset = getattr(models.Organization, 'objects')
                 parent_lookup = 'organization_id'
                 parent_related_name = 'organization'
                 parent_pk_field = 'id'
@@ -479,3 +688,136 @@ class OrgViewSets(object):
                     instance.organization.number_students -= 1
                     instance.organization.save()
                     super().perform_destroy(instance)
+
+
+class CourseViewSets(object):
+    """
+    与课程相关的ViewSet。
+    """
+    class CourseMeta(object):
+        class CourseMetaAdminViewSet(Utils.ViewSets.OrgViewSet):
+            queryset = getattr(models.CourseMeta, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.CourseMeta.CourseMetaAdmin
+            permission_classes = (permissions.IsEduAdmin, )
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.CourseMeta
+            search_fields = ('id', 'caption')
+            ordering_fields = ('id', 'caption', 'number_courses')
+
+            parent_queryset = getattr(models.Organization, 'objects')
+            parent_lookup = 'organization_id'
+            parent_related_name = 'organization'
+            parent_pk_field = 'id'
+
+            def perform_create(self, serializer):
+                instance = super().perform_create(serializer)
+                instance.organization.number_course_meta += 1
+                instance.organization.save()
+                return instance
+
+            def perform_destroy(self, instance):
+                instance.organization.number_course_meta -= 1
+                instance.organization.save()
+                super().perform_destroy(instance)
+
+    class Course(object):
+        class CourseMetaAdminViewSet(Utils.ViewSets.OrgViewSet):
+            queryset = getattr(models.Course, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.Course.CourseAdmin
+            permission_classes = (permissions.IsEduAdmin, )
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.Course
+            search_fields = ('id', 'caption')
+            ordering_fields = ('id', 'caption', 'start_time', 'end_time',
+                               'creator', 'updater', 'create_time', 'update_time')
+
+            parent_queryset = getattr(models.CourseMeta, 'objects')
+            parent_lookup = 'course_meta_id'
+            parent_related_name = 'meta'
+            parent_pk_field = 'id'
+
+            def perform_create(self, serializer):
+                instance = super().perform_create(serializer)
+                instance.organization.number_courses += 1
+                instance.organization.number_course_units += 1
+                instance.organization.save()
+                instance.meta.number_courses += 1
+                instance.meta.save()
+                return instance
+
+            def perform_destroy(self, instance):
+                instance.organization.number_courses -= 1
+                instance.organization.number_course_units -= 1
+                instance.organization.save()
+                instance.meta.number_courses -= 1
+                instance.meta.save()
+                super().perform_destroy(instance)
+
+        class CourseEduViewSet(Utils.ViewSets.OrgReadOnlyViewSet):
+            queryset = getattr(models.Course, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.Course.CourseAdmin
+            permission_classes = (permissions.IsEduAdmin,)
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.Course
+            search_fields = ('id', 'caption')
+            ordering_fields = ('id', 'caption', 'start_time', 'end_time',
+                               'creator', 'updater', 'create_time', 'update_time')
+
+            parent_queryset = getattr(models.Organization, 'objects')
+            parent_lookup = 'organization_id'
+            parent_related_name = 'organization'
+            parent_pk_field = 'id'
+
+    class CourseGroup(object):
+        class CourseGroupAdminViewSet(Utils.ViewSets.OrgViewSet):
+            queryset = getattr(models.CourseGroup, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.CourseGroup.CourseGroupAdmin
+            permission_classes = (permissions.IsEduAdmin, )
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.CourseGroup
+            search_fields = ('id', 'caption')
+            ordering_fields = ('id', 'caption', 'number_courses',
+                               'creator', 'updater', 'create_time', 'update_time')
+
+            parent_queryset = getattr(models.Organization, 'objects')
+            parent_lookup = 'organization_id'
+            parent_related_name = 'organization'
+            parent_pk_field = 'id'
+
+            def perform_create(self, serializer):
+                instance = super().perform_create(serializer)
+                instance.organization.number_course_units += 1
+                instance.organization.number_course_groups += 1
+                instance.organization.save()
+                return instance
+
+            def perform_destroy(self, instance):
+                instance.organization.number_course_units -= 1
+                instance.organization.number_course_groups -= 1
+                instance.organization.save()
+                super().perform_destroy(instance)
+
+        class CourseGroupRelationAdminViewSet(Utils.ViewSets.OrgViewSet):
+            queryset = getattr(models.CourseGroupRelation, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.CourseGroup.CourseRelationAdmin
+            permission_classes = (permissions.IsEduAdmin, )
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.CourseGroupRelation
+            search_fields = ('id',)
+            ordering_fields = ('id', 'creator', 'updater', 'create_time', 'update_time')
+
+            parent_queryset = getattr(models.CourseGroup, 'objects')
+            parent_lookup = 'course_group_id'
+            parent_related_name = 'group'
+            parent_pk_field = 'id'
+
+            def perform_create(self, serializer):
+                instance = super().perform_create(serializer)
+                instance.group.number_courses += 1
+                instance.group.save()
+                return instance
+
+            def perform_destroy(self, instance):
+                instance.group.number_courses -= 1
+                instance.group.save()
+                super().perform_destroy(instance)

@@ -1,0 +1,44 @@
+{% extends "organization/course/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}课程信息{% endblock %}
+
+{% block nav_course_readonly_instance %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="col-12">
+  <div class="container">
+    <div id="course"></div>
+  </div>
+  <br />
+  <br />
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxInfo({
+  id: 'course',
+  title: '课程',
+  getMethod: 'GET',
+  getURL: '{% url 'admin-course-readonly-detail' oid cid %}',
+  items: [
+    { name: 'id', caption: '课程ID', type: 'Number', readOnly: true },
+    { name: 'meta', caption: '课程基类ID', type: 'Text', readOnly: true },
+    { name: 'caption', caption: '课程名称', type: 'Text', typeInfo: { max_length: 150 } },
+    'Divide',
+    { name: 'creator', caption: '创建者', type: 'Text', readOnly: true },
+    { name: 'create_time', caption: '创建时间', type: 'Datetime', readOnly: true },
+    { name: 'updater', caption: '更新者', type: 'Text', readOnly: true },
+    { name: 'update_time', caption: '更新时间', type: 'Datetime', readOnly: true },
+    'Divide',
+    { name: 'available', caption: '对外可用', type: 'Boolean' },
+    { name: 'deleted', caption: '是否废弃', type: 'Boolean' },
+    'Divide',
+    { name: 'start_time', caption: '开始时间', type: 'Date', readOnly: true },
+    { name: 'end_time', caption: '结束时间', type: 'Date', readOnly: true },
+  ]
+
+})
+</script>
+{% endblock %}

@@ -7,8 +7,6 @@ from . import models
 
 
 class Utils(object):
-    read_only_fields = ('creator', 'create_time', 'updater', 'update_time')
-
     @staticmethod
     def create_user_profile(**kwargs):
         creator = kwargs.get('creator', None)
@@ -149,8 +147,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', 'is_staff', )
-                read_only_fields = Utils.read_only_fields + (
+                read_only_fields = (
                     'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
             def create(self, validated_data):
@@ -185,8 +184,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', 'is_staff', )
-                read_only_fields = Utils.read_only_fields + (
+                read_only_fields = (
                     'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
         class InstanceAdmin(serializers.ModelSerializer):
@@ -222,8 +222,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', 'is_staff', )
-                read_only_fields = Utils.read_only_fields + (
-                    'username', 'last_login', 'ip'
+                read_only_fields = (
+                    'username', 'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
             def update(self, instance, validated_data):
@@ -266,8 +267,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', )
-                read_only_fields = Utils.read_only_fields + (
-                    'username', 'last_login', 'ip'
+                read_only_fields = (
+                    'username', 'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
     class User(object):
@@ -305,8 +307,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', )
-                read_only_fields = Utils.read_only_fields + (
+                read_only_fields = (
                     'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
             def create(self, validated_data):
@@ -341,8 +344,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user',)
-                read_only_fields = Utils.read_only_fields + (
+                read_only_fields = (
                     'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
         class InstanceAdmin(serializers.ModelSerializer):
@@ -378,8 +382,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', 'is_staff', )
-                read_only_fields = Utils.read_only_fields + (
-                    'username', 'last_login', 'ip'
+                read_only_fields = (
+                    'username', 'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
             def update(self, instance, validated_data):
@@ -422,8 +427,9 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', )
-                read_only_fields = Utils.read_only_fields + (
-                    'username', 'last_login', 'ip'
+                read_only_fields = (
+                    'username', 'last_login', 'ip',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
     class Self(object):
@@ -437,9 +443,10 @@ class UserSerializers(object):
             class Meta:
                 model = models.UserProfile
                 exclude = ('user', )
-                read_only_fields = Utils.read_only_fields + (
+                read_only_fields = (
                     'username', 'last_login', 'ip',
-                    'org_identities', 'identities'
+                    'org_identities', 'identities',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
 
             @staticmethod
@@ -485,7 +492,7 @@ class OrgSerializers(object):
         class ListAdmin(serializers.ModelSerializer):
             @staticmethod
             def validate_parent(value):
-                root = models.Organization.objects.get(name='ROOT')
+                root = getattr(models.Organization, 'objects').get(name='ROOT')
 
                 checked = set()
                 cur = value
@@ -501,16 +508,38 @@ class OrgSerializers(object):
             class Meta:
                 model = models.Organization
                 fields = '__all__'
-                read_only_fields = Utils.read_only_fields + (
-                    'number_organizations', 'number_students', 'number_teachers', 'number_admins'
+                read_only_fields = (
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins',
+                    'number_course_meta', 'number_course_units', 'number_courses', 'number_course_groups',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
                 extra_kwargs = {
                     'parent': {'allow_null': False, 'required': True}
                 }
 
+        class ListEdu(serializers.ModelSerializer):
+            class Meta:
+                model = models.Organization
+                exclude = ('creator', 'updater', 'available', 'deleted', )
+                read_only_fields = (
+                    'create_time', 'update_time',
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins',
+                    'number_course_meta', 'number_course_units', 'number_courses', 'number_course_groups',
+                )
+
+        class List(serializers.ModelSerializer):
+            class Meta:
+                model = models.Organization
+                exclude = ('creator', 'updater', 'available', 'deleted', )
+                read_only_fields = (
+                    'create_time', 'update_time',
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins',
+                    'number_course_meta', 'number_course_units', 'number_courses', 'number_course_groups',
+                )
+
         class InstanceAdmin(serializers.ModelSerializer):
             def validate_parent(self, value):
-                root = models.Organization.objects.get(name='ROOT')
+                root = getattr(models.Organization, 'objects').get(name='ROOT')
 
                 checked = set()
                 cur = value
@@ -527,12 +556,37 @@ class OrgSerializers(object):
             class Meta:
                 model = models.Organization
                 fields = '__all__'
-                read_only_fields = Utils.read_only_fields + (
-                    'number_organizations', 'number_students', 'number_teachers', 'number_admins'
+                read_only_fields = (
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins',
+                    'number_course_meta', 'number_course_units', 'number_courses', 'number_course_groups',
+                    'creator', 'create_time', 'updater', 'update_time'
                 )
                 extra_kwargs = {
                     'parent': {'allow_null': False, 'required': True}
                 }
+
+        class InstanceEdu(serializers.ModelSerializer):
+            class Meta:
+                model = models.Organization
+                exclude = ('creator', 'updater', 'available', 'deleted', )
+                read_only_fields = (
+                    'creator', 'updater',
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins',
+                    'number_course_meta', 'number_course_units', 'number_courses', 'number_course_groups',
+                )
+                extra_kwargs = {
+                    'parent': {'allow_null': False, 'required': True}
+                }
+
+        class Instance(serializers.ModelSerializer):
+            class Meta:
+                model = models.Organization
+                exclude = ('creator', 'updater', 'available', 'deleted', )
+                read_only_fields = (
+                    'create_time', 'update_time',
+                    'number_organizations', 'number_students', 'number_teachers', 'number_admins',
+                    'number_course_meta', 'number_course_units', 'number_courses', 'number_course_groups',
+                )
 
     class EduAdmin(object):
         class ListAdmin(serializers.ModelSerializer):
@@ -549,7 +603,7 @@ class OrgSerializers(object):
             class Meta:
                 model = models.EduAdmin
                 exclude = ('organization', 'user', 'profile')
-                read_only_fields = Utils.read_only_fields
+                read_only_fields = ('creator', 'create_time', 'updater', 'update_time')
 
             def create(self, validated_data):
                 u = validated_data.get('username')
@@ -588,7 +642,8 @@ class OrgSerializers(object):
             class Meta:
                 model = models.EduAdmin
                 exclude = ('organization', 'user', 'profile')
-                read_only_fields = Utils.read_only_fields + ('username', )
+                read_only_fields = ('username',
+                                    'creator', 'create_time', 'updater', 'update_time')
 
             def update(self, instance, validated_data):
                 if 'password' in validated_data:
@@ -623,7 +678,7 @@ class OrgSerializers(object):
             class Meta:
                 model = models.Teacher
                 exclude = ('organization', 'user', 'profile')
-                read_only_fields = Utils.read_only_fields
+                read_only_fields = ('creator', 'create_time', 'updater', 'update_time')
 
             def create(self, validated_data):
                 u = validated_data.get('username')
@@ -664,7 +719,8 @@ class OrgSerializers(object):
             class Meta:
                 model = models.Teacher
                 exclude = ('organization', 'user', 'profile')
-                read_only_fields = Utils.read_only_fields + ('username', )
+                read_only_fields = ('username',
+                                    'creator', 'create_time', 'updater', 'update_time')
 
             def update(self, instance, validated_data):
                 if 'password' in validated_data:
@@ -701,7 +757,7 @@ class OrgSerializers(object):
             class Meta:
                 model = models.Student
                 exclude = ('organization', 'user', 'profile')
-                read_only_fields = Utils.read_only_fields
+                read_only_fields = ('creator', 'create_time', 'updater', 'update_time', )
 
             def create(self, validated_data):
                 u = validated_data.get('username')
@@ -744,7 +800,8 @@ class OrgSerializers(object):
             class Meta:
                 model = models.Student
                 exclude = ('organization', 'user', 'profile')
-                read_only_fields = Utils.read_only_fields + ('username', )
+                read_only_fields = ('username',
+                                    'creator', 'create_time', 'updater', 'update_time')
 
             def update(self, instance, validated_data):
                 if 'password' in validated_data:
@@ -769,3 +826,48 @@ class OrgSerializers(object):
                 instance.save()
 
                 return instance
+
+
+class CourseSerializers(object):
+    """
+    与机构管理相关的Serializer
+    """
+    class CourseMeta(object):
+        class CourseMetaAdmin(serializers.ModelSerializer):
+            class Meta:
+                model = models.CourseMeta
+                exclude = ('organization', )
+                read_only_fields = ('id', 'number_courses',
+                                    'creator', 'create_time', 'updater', 'update_time')
+
+    class Course(object):
+        class CourseAdmin(serializers.ModelSerializer):
+            class Meta:
+                model = models.Course
+                exclude = ('organization',)
+                read_only_fields = ('id', 'meta',
+                                    'creator', 'create_time', 'updater', 'update_time')
+
+    class CourseGroup(object):
+        class CourseGroupAdmin(serializers.ModelSerializer):
+            class Meta:
+                model = models.CourseGroup
+                exclude = ('organization', 'courses')
+                read_only_fields = ('id', 'meta', 'number_courses',
+                                    'creator', 'create_time', 'updater', 'update_time')
+
+        class CourseRelationAdmin(serializers.ModelSerializer):
+            class Meta:
+                model = models.CourseGroupRelation
+                exclude = ('organization', 'group')
+                read_only_fields = ('id', 'creator', 'create_time', 'updater', 'update_time')
+
+            def create(self, validated_data):
+                group = validated_data['group']
+                course = validated_data['course']
+                if getattr(models.CourseGroupRelation, 'objects').filter(
+                    group=group, course=course
+                ).exists():
+                    info = {"course": ["Course exists."]}
+                    raise serializers.ValidationError(info)
+                return super().create(validated_data)
