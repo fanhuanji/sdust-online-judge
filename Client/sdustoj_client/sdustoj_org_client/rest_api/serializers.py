@@ -844,8 +844,26 @@ class CourseSerializers(object):
         class CourseAdmin(serializers.ModelSerializer):
             class Meta:
                 model = models.Course
-                exclude = ('organization',)
+                exclude = ('organization', 'students', 'teachers', )
                 read_only_fields = ('id', 'meta',
+                                    'creator', 'create_time', 'updater', 'update_time')
+
+            def create(self, validated_data):
+                instance = super().create(validated_data)
+                course_unit = models.CourseUnit(type=models.CourseUnit.TYPE.course,
+                                                course=instance)
+                course_unit.save()
+                return instance
+
+        class Course(serializers.ModelSerializer):
+            organization_caption = serializers.SlugRelatedField(
+                source='organization', many=False, read_only=True, slug_field='caption'
+            )
+
+            class Meta:
+                model = models.Course
+                exclude = ('students', 'teachers', 'meta', 'available', 'deleted')
+                read_only_fields = ('id',
                                     'creator', 'create_time', 'updater', 'update_time')
 
     class CourseGroup(object):
@@ -855,6 +873,13 @@ class CourseSerializers(object):
                 exclude = ('organization', 'courses')
                 read_only_fields = ('id', 'meta', 'number_courses',
                                     'creator', 'create_time', 'updater', 'update_time')
+
+            def create(self, validated_data):
+                instance = super().create(validated_data)
+                course_unit = models.CourseUnit(type=models.CourseUnit.TYPE.course_group,
+                                                group=instance)
+                course_unit.save()
+                return instance
 
         class CourseRelation(object):
             class ListAdmin(serializers.ModelSerializer):
@@ -985,7 +1010,80 @@ class CourseSerializers(object):
                     raise serializers.ValidationError(info)
                 return super().create(validated_data)
 
+        class List(serializers.ModelSerializer):
+            student_id = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='student_id'
+            )
+            grade = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='grade'
+            )
+            class_in = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='class_in'
+            )
+
+            name = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='name'
+            )
+            sex = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='sex'
+            )
+            phone = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='phone'
+            )
+            email = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='email'
+            )
+
+            class Meta:
+                model = models.CourseStudentRelation
+                exclude = ('organization', 'course', )
+                read_only_fields = ('creator', 'create_time', 'updater', 'update_time')
+
+            def create(self, validated_data):
+                student = validated_data['student']
+                course = validated_data['course']
+                if student.organization != course.organization:
+                    info = {"student": ["Student not exist."]}
+                    raise serializers.ValidationError(info)
+                if getattr(models.CourseStudentRelation, 'objects').filter(
+                        student=student, course=course
+                ).exists():
+                    info = {"student": ["Student exists."]}
+                    raise serializers.ValidationError(info)
+                validated_data['organization'] = course.organization
+                return super().create(validated_data)
+
         class InstanceAdmin(serializers.ModelSerializer):
+            student_id = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='student_id'
+            )
+            grade = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='grade'
+            )
+            class_in = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='class_in'
+            )
+
+            name = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='name'
+            )
+            sex = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='sex'
+            )
+            phone = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='phone'
+            )
+            email = serializers.SlugRelatedField(
+                source='student', many=False, read_only=True, slug_field='email'
+            )
+
+            class Meta:
+                model = models.CourseStudentRelation
+                exclude = ('organization', 'course', )
+                read_only_fields = ('creator', 'create_time', 'updater', 'update_time',
+                                    'student')
+
+        class Instance(serializers.ModelSerializer):
             student_id = serializers.SlugRelatedField(
                 source='student', many=False, read_only=True, slug_field='student_id'
             )

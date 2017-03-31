@@ -125,11 +125,33 @@ class Utils(object):
 
         @staticmethod
         def edu_admin(request, template, context=None):
-            print(12312312)
             return Utils.Render._identity_render(
                 request=request,
                 template=template,
-                id_expect=(IdentityChoices.edu_admin, IdentityChoices.org_admin, IdentityChoices.root),
+                id_expect=(IdentityChoices.edu_admin,
+                           IdentityChoices.org_admin,
+                           IdentityChoices.root),
+                context=context
+            )
+
+        @staticmethod
+        def teacher(request, template, context=None):
+            return Utils.Render._identity_render(
+                request=request,
+                template=template,
+                id_expect=(IdentityChoices.teacher,
+                           IdentityChoices.root),
+                context=context
+            )
+
+        @staticmethod
+        def student(request, template, context=None):
+            return Utils.Render._identity_render(
+                request=request,
+                template=template,
+                id_expect=(IdentityChoices.student,
+                           IdentityChoices.teacher,
+                           IdentityChoices.root),
                 context=context
             )
 
@@ -419,6 +441,51 @@ class CoursePages(object):
                     'cid': cid
                 }
             )
+
+
+class MyCoursePages(object):
+    class TeachingCourse(object):
+        @staticmethod
+        def list(request):
+            return Utils.Render.teacher(request,
+                                        'myCourse/teachingCourse/list.html')
+
+        @staticmethod
+        def instance(request, cid):
+            return Utils.Render.teacher(request,
+                                        'myCourse/teachingCourse/instance.html',
+                                        {'cid': cid})
+
+    class StudentRelation(object):
+        @staticmethod
+        def list(request, cid):
+            return Utils.Render.teacher(request,
+                                        'myCourse/teachingCourse/student/list.html',
+                                        {'cid': cid})
+
+        @staticmethod
+        def create(request, cid):
+            return Utils.Render.teacher(request,
+                                        'myCourse/teachingCourse/student/create.html',
+                                        {'cid': cid})
+
+        @staticmethod
+        def instance(request, cid, rid):
+            return Utils.Render.teacher(request,
+                                        'myCourse/teachingCourse/student/instance.html',
+                                        {'cid': cid, 'rid': rid})
+
+    class LearningCourse(object):
+        @staticmethod
+        def list(request):
+            return Utils.Render.student(request,
+                                        'myCourse/learningCourse/list.html')
+
+        @staticmethod
+        def instance(request, cid):
+            return Utils.Render.student(request,
+                                        'myCourse/learningCourse/instance.html',
+                                        {'cid': cid})
 
 
 class UserPages(object):

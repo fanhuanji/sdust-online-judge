@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from rest_framework import viewsets, mixins, status, exceptions, response, permissions as permissions_
-from . import models, serializers, permissions, filters
+from . import models, serializers, permissions, filters, utils
 
 from rest_framework.settings import api_settings
 
@@ -721,12 +721,12 @@ class CourseViewSets(object):
                 super().perform_destroy(instance)
 
     class Course(object):
-        class CourseMetaAdminViewSet(Utils.ViewSets.OrgViewSet):
+        class CourseAdminViewSet(Utils.ViewSets.OrgViewSet):
             queryset = getattr(models.Course, 'objects').order_by('id')
             serializer_class = serializers.CourseSerializers.Course.CourseAdmin
             permission_classes = (permissions.IsEduAdmin, )
             lookup_field = 'id'
-            filter_class = filters.CourseFilters.Course
+            filter_class = filters.CourseFilters.CourseAdmin
             search_fields = ('id', 'caption')
             ordering_fields = ('id', 'caption', 'start_time', 'end_time',
                                'creator', 'updater', 'create_time', 'update_time')
@@ -758,7 +758,7 @@ class CourseViewSets(object):
             serializer_class = serializers.CourseSerializers.Course.CourseAdmin
             permission_classes = (permissions.IsEduAdmin,)
             lookup_field = 'id'
-            filter_class = filters.CourseFilters.Course
+            filter_class = filters.CourseFilters.CourseAdmin
             search_fields = ('id', 'caption')
             ordering_fields = ('id', 'caption', 'start_time', 'end_time',
                                'creator', 'updater', 'create_time', 'update_time')
@@ -767,6 +767,54 @@ class CourseViewSets(object):
             parent_lookup = 'organization_id'
             parent_related_name = 'organization'
             parent_pk_field = 'id'
+
+        class CourseTeacherViewSet(Utils.ViewSets.ResourceReadOnlyViewSet):
+            queryset = getattr(models.Course, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.Course.Course
+            permission_classes = (permissions.IsTeacher,)
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.Course
+            search_fields = ('id', 'caption')
+            ordering_fields = ('id', 'caption', 'start_time', 'end_time',
+                               'creator', 'updater', 'create_time', 'update_time')
+
+            def _set_queryset(self, request):
+                if not utils.is_root(request.user):
+                    self.queryset = getattr(models.Course, 'objects').filter(
+                        teachers__user=request.user, available=True, deleted=False
+                    ).order_by('id')
+
+            def list(self, request, *args, **kwargs):
+                self._set_queryset(request)
+                return super().list(request, *args, **kwargs)
+
+            def retrieve(self, request, *args, **kwargs):
+                self._set_queryset(request)
+                return super().retrieve(request, *args, **kwargs)
+
+        class CourseStudentViewSet(Utils.ViewSets.ResourceReadOnlyViewSet):
+            queryset = getattr(models.Course, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.Course.Course
+            permission_classes = (permissions.IsStudent,)
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.Course
+            search_fields = ('id', 'caption')
+            ordering_fields = ('id', 'caption', 'start_time', 'end_time',
+                               'creator', 'updater', 'create_time', 'update_time')
+
+            def _set_queryset(self, request):
+                if not utils.is_root(request.user):
+                    self.queryset = getattr(models.Course, 'objects').filter(
+                        students__user=request.user, available=True, deleted=False
+                    ).order_by('id')
+
+            def list(self, request, *args, **kwargs):
+                self._set_queryset(request)
+                return super().list(request, *args, **kwargs)
+
+            def retrieve(self, request, *args, **kwargs):
+                self._set_queryset(request)
+                return super().retrieve(request, *args, **kwargs)
 
     class CourseGroup(object):
         class CourseGroupAdminViewSet(Utils.ViewSets.OrgViewSet):
@@ -852,6 +900,11 @@ class CourseViewSets(object):
                 parent_related_name = 'course'
                 parent_pk_field = 'id'
 
+                def perform_create(self, serializer):
+                    instance = super().perform_create(serializer)
+                    utils.flush_courses(instance.teacher.user)
+                    return instance
+
         class Instance(object):
             class TeacherRelationAdminViewSet(Utils.ViewSets.OrgInstanceViewSet):
                 queryset = getattr(models.CourseTeacherRelation, 'objects')
@@ -863,6 +916,11 @@ class CourseViewSets(object):
                 parent_lookup = 'course_id'
                 parent_related_name = 'course'
                 parent_pk_field = 'id'
+
+                def perform_destroy(self, instance):
+                    user = instance.teaher.user
+                    super().perform_destroy(instance)
+                    utils.flush_courses(user)
 
     class StudentRelation(object):
         class List(object):
@@ -880,6 +938,44 @@ class CourseViewSets(object):
                 parent_related_name = 'course'
                 parent_pk_field = 'id'
 
+                def perform_create(self, serializer):
+                    instance = super().perform_create(serializer)
+                    utils.flush_courses(instance.student.user)
+                    return instance
+
+            class StudentRelationViewSet(Utils.ViewSets.NestedResourceListViewSet):
+                queryset = getattr(models.CourseStudentRelation, 'objects')
+                serializer_class = serializers.CourseSerializers.StudentRelation.List
+                permission_classes = (permissions.IsTeacher, )
+                lookup_field = 'id'
+
+                search_fields = ('id', )
+                ordering_fields = ('id', 'creator', 'updater', 'create_time', 'update_time')
+
+                parent_queryset = getattr(models.Course, 'objects')
+                parent_lookup = 'course_id'
+                parent_related_name = 'course'
+                parent_pk_field = 'id'
+
+                def _set_queryset(self, request):
+                    if not utils.is_root(request.user):
+                        self.parent_queryset = getattr(models.Course, 'objects').filter(
+                            teachers__user=request.user
+                        )
+
+                def list(self, request, *args, **kwargs):
+                    self._set_queryset(request)
+                    return super().list(request, *args, **kwargs)
+
+                def create(self, request, *args, **kwargs):
+                    self._set_queryset(request)
+                    return super().create(request, *args, **kwargs)
+
+                def perform_create(self, serializer):
+                    instance = super().perform_create(serializer)
+                    utils.flush_courses(instance.student.user)
+                    return instance
+
         class Instance(object):
             class StudentRelationAdminViewSet(Utils.ViewSets.OrgInstanceViewSet):
                 queryset = getattr(models.CourseStudentRelation, 'objects')
@@ -891,3 +987,42 @@ class CourseViewSets(object):
                 parent_lookup = 'course_id'
                 parent_related_name = 'course'
                 parent_pk_field = 'id'
+
+                def perform_destroy(self, instance):
+                    user = instance.student.user
+                    super().perform_destroy(instance)
+                    utils.flush_courses(user)
+
+            class StudentRelationViewSet(Utils.ViewSets.OrgInstanceViewSet):
+                queryset = getattr(models.CourseStudentRelation, 'objects')
+                serializer_class = serializers.CourseSerializers.StudentRelation.InstanceAdmin
+                permission_classes = (permissions.IsStudent, )
+                lookup_field = 'id'
+
+                parent_queryset = getattr(models.Course, 'objects')
+                parent_lookup = 'course_id'
+                parent_related_name = 'course'
+                parent_pk_field = 'id'
+
+                def _set_queryset(self, request):
+                    if not utils.is_root(request.user):
+                        self.parent_queryset = getattr(models.Course, 'objects').filter(
+                            teachers__user=request.user
+                        )
+
+                def retrieve(self, request, *args, **kwargs):
+                    self._set_queryset(request)
+                    return super().retrieve(request, *args, **kwargs)
+
+                def update(self, request, *args, **kwargs):
+                    self._set_queryset(request)
+                    return super().update(request, *args, **kwargs)
+
+                def destroy(self, request, *args, **kwargs):
+                    self._set_queryset(request)
+                    return super().destroy(request, *args, **kwargs)
+
+                def perform_destroy(self, instance):
+                    user = instance.student.user
+                    super().perform_destroy(instance)
+                    utils.flush_courses(user)

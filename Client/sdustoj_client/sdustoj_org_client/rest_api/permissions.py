@@ -90,19 +90,19 @@ class IsEduAdmin(OrgPermission):
     write_identities = (IdentityChoices.edu_admin, IdentityChoices.org_admin, IdentityChoices.root,)
 
 
-class TeacherReadOnly(OrgPermission):
-    read_identities = (
-        IdentityChoices.teacher, IdentityChoices.edu_admin, IdentityChoices.org_admin, IdentityChoices.root,
-    )
-    write_identities = (
-        IdentityChoices.edu_admin, IdentityChoices.org_admin, IdentityChoices.root,
-    )
-
-
 class IsTeacher(OrgPermission):
     read_identities = (
-        IdentityChoices.teacher, IdentityChoices.edu_admin, IdentityChoices.org_admin, IdentityChoices.root,
+        IdentityChoices.teacher, IdentityChoices.root,
     )
     write_identities = (
-        IdentityChoices.teacher, IdentityChoices.edu_admin, IdentityChoices.org_admin, IdentityChoices.root,
+        IdentityChoices.teacher, IdentityChoices.root,
+    )
+
+
+class IsStudent(OrgPermission):
+    read_identities = (
+        IdentityChoices.student, IdentityChoices.teacher, IdentityChoices.root
+    )
+    write_identities = (
+        IdentityChoices.student, IdentityChoices.teacher, IdentityChoices.root
     )

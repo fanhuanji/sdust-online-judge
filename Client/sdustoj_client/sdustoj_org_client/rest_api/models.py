@@ -78,6 +78,7 @@ class UserProfile(Resource):
     ip = models.GenericIPAddressField(null=True)
 
     identities = pg_fields.JSONField(default={})        # 身份信息
+    courses = pg_fields.JSONField(default={})           # 课程信息
 
     def get_site_identities(self):
         ret = []
@@ -214,19 +215,29 @@ class CourseMeta(Resource):
     number_courses = models.IntegerField(default=0)
 
 
-class CourseUnit(Resource):
+class CourseUnit(models.Model):
     """
     课程单元，课程与课程组的基类
     """
-    organization = models.ForeignKey(Organization, related_name='course_units', to_field='id')
+    class TYPE:
+        course_group = 'GROUP'
+        course = 'COURSE'
 
     id = models.BigAutoField(primary_key=True)
+    type = models.CharField(max_length=8)
+    group = models.OneToOneField('CourseGroup', related_name='unit', to_field='id', null=True,
+                                 on_delete=models.CASCADE)
+    course = models.OneToOneField('Course', related_name='unit', to_field='id', null=True,
+                                  on_delete=models.CASCADE)
 
 
-class CourseGroup(CourseUnit):
+class CourseGroup(Resource):
     """
     课程组，部分课程的集合，用于挂在公共的任务
     """
+    id = models.BigAutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, related_name='course_groups', to_field='id')
+
     caption = models.CharField(max_length=150, null=True)
     courses = models.ManyToManyField('Course', related_name='groups', through='CourseGroupRelation',
                                      through_fields=('group', 'course'))
@@ -234,15 +245,25 @@ class CourseGroup(CourseUnit):
     number_courses = models.IntegerField(default=0)
 
 
-class Course(CourseUnit):
+class Course(Resource):
     """
     课程
     """
+    id = models.BigAutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, related_name='courses', to_field='id')
+
     meta = models.ForeignKey(CourseMeta, related_name='courses', to_field='id')
     caption = models.CharField(max_length=150)
 
     start_time = models.DateField()
     end_time = models.DateField()
+
+    students = models.ManyToManyField(Student, related_name='courses',
+                                      through='CourseStudentRelation',
+                                      through_fields=('course', 'student'))
+    teachers = models.ManyToManyField(Teacher, related_name='courses',
+                                      through='CourseTeacherRelation',
+                                      through_fields=('course', 'teacher'))
 
     def __str__(self):
         return '<Course %s: %s>' % (self.id, self.caption)

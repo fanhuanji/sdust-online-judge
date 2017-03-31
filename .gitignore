@@ -260,7 +260,6 @@ jspm_packages
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
 *$py.class
 
 # C extensions
@@ -505,4 +504,3 @@ flycheck_*.el
 /Server/sdustoj_server/collected_static/
 /Judge/adapter-hustoj/Client/client_writer.log
 /Install/installation_logs/
-

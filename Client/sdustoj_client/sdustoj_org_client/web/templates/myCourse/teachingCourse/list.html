@@ -1,0 +1,37 @@
+{% extends "myCourse/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}我教授的课程{% endblock %}
+
+{% block nav_teaching %}active{% endblock %}
+
+{% block sub_content %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="course"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.DRFTable({
+  id: 'course',
+  title: '我教授的课程',
+  url: "{% url 'api-course-teaching-list' %}",
+  search: true,
+  filters: [
+    { name: 'creator', type: 'text', placeholder: '请输入创建者用户名', caption: '创建者' },
+    { name: 'updater', type: 'text', placeholder: '请输入更新者用户名', caption: '更新者' }
+  ],
+  columns: [
+    { name: 'id', caption: 'ID', sort: true, ordering: 1, type: 'Link', typeInfo: { base_url: '{% url 'web-teaching-courses' %}', key: 'id' } },
+    { name: 'organization_caption', caption: '所属机构', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-my-orgs' %}', key: 'organization' } },
+    { name: 'caption', caption: '课程名称', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-teaching-courses' %}', key: 'id' } },
+    { name: 'start_time', caption: '开始时间', sort: true, type: 'Date' },
+    { name: 'end_time', caption: '结束时间', sort: true, type: 'Date' },
+  ]
+})
+
+</script>
+{% endblock %}

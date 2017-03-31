@@ -1,0 +1,63 @@
+{% extends "myCourse/teachingCourse/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}课程下学生信息{% endblock %}
+
+{% block nav_student_relation %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="col-12">
+  <div class="container">
+    <div id="studentInfo"></div>
+  </div>
+  <br />
+  <br />
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxInfo({
+  id: 'studentInfo',
+  title: '课程学生关系',
+  getMethod: 'GET',
+  updateMethod: 'PATCH',
+  removeMethod: 'DELETE',
+  getURL: '{% url 'api-course-student-relation-detail' cid rid %}',
+  updateURL: '{% url 'api-course-student-relation-detail' cid rid %}',
+  removeURL: '{% url 'api-course-student-relation-detail' cid rid %}',
+  removeToURL: '{% url 'web-teaching-course-students' cid %}',
+  items: [
+    { name: 'id', caption: '课程学生关系ID', type: 'Number', readOnly: true },
+    { name: 'student', caption: '学生ID', type: 'Text', readOnly: true },
+    'Divide',
+    { name: 'student_id', caption: '学号', type: 'Text', readOnly: true },
+    { name: 'grade', caption: '年级', type: 'Text', readOnly: true },
+    { name: 'class_in', caption: '班级', type: 'Text', readOnly: true },
+    { name: 'name', caption: '姓名', type: 'Text', readOnly: true },
+    { name: 'sex', caption: '性别', type: 'Select', readOnly: true,
+      typeInfo: {
+        ajax: false,
+        choices: [
+          { text: '保密', value: 'SECRET', selected: true },
+          { text: '男', value: 'MALE' },
+          { text: '女', value: 'FEMALE' }
+        ]
+      }
+    },
+    'Divide',
+    { name: 'creator', caption: '创建者', type: 'Text', readOnly: true },
+    { name: 'create_time', caption: '创建时间', type: 'Datetime', readOnly: true },
+    { name: 'updater', caption: '更新者', type: 'Text', readOnly: true },
+    { name: 'update_time', caption: '更新时间', type: 'Datetime', readOnly: true },
+    'Divide',
+    { name: 'available', caption: '对外可用', type: 'Boolean' },
+    { name: 'deleted', caption: '是否废弃', type: 'Boolean' },
+    'Divide',
+    { name: 'phone', caption: '电话', type: 'Text', readOnly: true },
+    { name: 'email', caption: '邮箱', type: 'Email', readOnly: true }
+  ]
+
+})
+</script>
+{% endblock %}

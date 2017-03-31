@@ -90,7 +90,7 @@ class CourseFilters:
                 'create_time_gte', 'create_time_lte', 'update_time_gte', 'update_time_lte'
             )
 
-    class Course(Utils.ResourceFilter):
+    class CourseAdmin(Utils.ResourceFilter):
         start_time_gte = django_filters.DateFilter(name='start_time', lookup_expr='gte')
         start_time_lte = django_filters.DateFilter(name='start_time', lookup_expr='lte')
         end_time_gte = django_filters.DateFilter(name='end_time', lookup_expr='gte')
@@ -100,6 +100,22 @@ class CourseFilters:
             model = models.Course
             fields = (
                 'id', 'meta', 'caption', 'available',
+                'start_time', 'start_time_gte', 'start_time_lte',
+                'end_time', 'end_time_gte', 'end_time_lte',
+                'creator', 'create_time', 'updater', 'update_time',
+                'create_time_gte', 'create_time_lte', 'update_time_gte', 'update_time_lte'
+            )
+
+    class Course(Utils.ResourceFilter):
+        start_time_gte = django_filters.DateFilter(name='start_time', lookup_expr='gte')
+        start_time_lte = django_filters.DateFilter(name='start_time', lookup_expr='lte')
+        end_time_gte = django_filters.DateFilter(name='end_time', lookup_expr='gte')
+        end_time_lte = django_filters.DateFilter(name='end_time', lookup_expr='lte')
+
+        class Meta:
+            model = models.Course
+            fields = (
+                'id', 'organization', 'caption',
                 'start_time', 'start_time_gte', 'start_time_lte',
                 'end_time', 'end_time_gte', 'end_time_lte',
                 'creator', 'create_time', 'updater', 'update_time',

@@ -72,7 +72,7 @@ admin_course_router.register(
 )
 admin_course_meta_router = NestedSimpleRouter(admin_org_router, r'course-meta', lookup='course_meta')
 admin_course_meta_router.register(
-    r'courses', CourseViewSets.Course.CourseMetaAdminViewSet, base_name='admin-course'
+    r'courses', CourseViewSets.Course.CourseAdminViewSet, base_name='admin-course'
 )
 admin_course_group_router = NestedSimpleRouter(admin_org_router, r'course-groups', lookup='course_group')
 admin_course_group_router.register(
@@ -108,6 +108,24 @@ router.register(
 router.register(
     r'organizations', OrgViewSets.Organization.Instance.OrganizationViewSet, base_name='api-organization'
 )
+router.register(
+    r'courses-teaching', CourseViewSets.Course.CourseTeacherViewSet,
+    base_name='api-course-teaching'
+)
+router.register(
+    r'courses-learning', CourseViewSets.Course.CourseStudentViewSet,
+    base_name='api-course-learning'
+)
+course_teaching_router = NestedSimpleRouter(router, r'courses-teaching', lookup='course')
+course_teaching_router.register(
+    r'student-relations', CourseViewSets.StudentRelation.List.StudentRelationViewSet,
+    base_name='api-course-student-relation'
+)
+course_teaching_router.register(
+    r'student-relations', CourseViewSets.StudentRelation.Instance.StudentRelationViewSet,
+    base_name='api-course-student-relation'
+)
 
 api_url_patterns = []
 api_url_patterns += router.urls
+api_url_patterns += course_teaching_router.urls

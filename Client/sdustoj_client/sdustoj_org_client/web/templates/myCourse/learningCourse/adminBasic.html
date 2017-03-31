@@ -1,0 +1,28 @@
+{% extends "myCourse/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block nav_org %}active{% endblock %}
+
+{% block nav_learning %}active{% endblock %}
+
+{% block sub_content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-3 col-md-4">
+      <div class="container">
+        <nav class="nav flex-column nav-pills">
+          <a class="nav-link {% block nav_course_info %}{% endblock %}" href="{% url 'web-learning-courses-instance' cid %}">课程信息</a>
+        </nav>
+      </div>
+      <br class="hidden-md-up">
+      <br class="hidden-md-up">
+    </div>
+    <div class="col-1 row">
+      <div class="nav-divider hidden-sm-down"></div>
+    </div>
+    <div class="col-lg-8 col-md-7">
+      {% block sub_content2 %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

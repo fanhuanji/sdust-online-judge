@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from .views import MainPages, UserPages, SelfPages, OrgPages, CoursePages
+from .views import MainPages, UserPages, SelfPages, OrgPages, CoursePages, MyCoursePages
 
 
 personal_patterns = [
@@ -100,6 +100,23 @@ my_org_patterns = [
     url(r'^(\d+)/$', OrgPages.MyOrganization.instance, name='web-my-orgs-instance'),
 ]
 
+teaching_student_patterns = [
+    url(r'^$', MyCoursePages.StudentRelation.list, name='web-teaching-course-students'),
+    url(r'^create/', MyCoursePages.StudentRelation.create, name='web-teaching-course-students-create'),
+    url(r'^(\d+)/$', MyCoursePages.StudentRelation.instance, name='web-teaching-course-students-instance'),
+]
+
+teaching_course_patterns = [
+    url(r'^$', MyCoursePages.TeachingCourse.list, name='web-teaching-courses'),
+    url(r'^(\d+)/$', MyCoursePages.TeachingCourse.instance, name='web-teaching-courses-instance'),
+    url(r'^(\d+)/student-relations/', include(teaching_student_patterns)),
+]
+
+learning_course_patterns = [
+    url(r'^$', MyCoursePages.LearningCourse.list, name='web-learning-courses'),
+    url(r'^(\d+)/$', MyCoursePages.LearningCourse.instance, name='web-learning-courses-instance'),
+]
+
 url_patterns = [
     url(r'^home/', MainPages.home, name='web-home'),
     url(r'^login/', MainPages.login, name='web-login'),
@@ -108,4 +125,6 @@ url_patterns = [
     url(r'^admins/', include(admin_patterns)),
     url(r'^my-organizations/', include(my_org_patterns)),
     url(r'^organizations/', include(org_admin_patterns)),
+    url(r'^teaching-courses/', include(teaching_course_patterns)),
+    url(r'^learning-courses/', include(learning_course_patterns)),
 ]

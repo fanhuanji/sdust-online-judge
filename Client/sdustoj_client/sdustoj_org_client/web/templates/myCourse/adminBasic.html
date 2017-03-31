@@ -1,0 +1,15 @@
+{% extends "adminBasic.html" %}
+{% load staticfiles %}
+
+{% block main_nav_my_courses %}active{% endblock %}
+
+{% block sub_nav %}
+{% if 'TEACHER_ADMIN' in user_info.identities or 'ROOT' in user_info.identities %}
+<li class="nav-item">
+  <a class="nav-link {% block nav_teaching %}{% endblock %}" href="{% url 'web-teaching-courses' %}">我教的课程</a>
+</li>
+{% endif %}
+<li class="nav-item">
+  <a class="nav-link {% block nav_learning %}{% endblock %}" href="{% url 'web-learning-courses' %}">学习的课程</a>
+</li>
+{% endblock %}
