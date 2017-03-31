@@ -1,7 +1,7 @@
 {% extends "organization/orgAdminBasic.html" %}
 {% load staticfiles %}
 
-{% block sub_sub_nav %}
+{% block sub_meta_nav %}
 <a class="nav-link {% block nav_course_meta_instance %}{% endblock %}" href="{% url 'web-course-meta-instance' oid mid %}">&nbsp;&nbsp;&nbsp;&nbsp;课程基类信息</a>
 <a class="nav-link {% block nav_course %}{% endblock %}" href="{% url 'web-courses' oid mid %}">&nbsp;&nbsp;&nbsp;&nbsp;基类下课程</a>
 {% endblock %}

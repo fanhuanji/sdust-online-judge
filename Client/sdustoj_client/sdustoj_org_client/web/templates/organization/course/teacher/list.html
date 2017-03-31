@@ -1,0 +1,39 @@
+{% extends "organization/course/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}课程下的教师{% endblock %}
+
+{% block nav_course_teacher %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="teacher"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.DRFTable({
+  id: 'teacher',
+  title: '教师',
+  url: "{% url 'admin-course-teacher-relation-list' oid cid %}",
+  search: true,
+  filters: [
+    { name: 'creator', type: 'text', placeholder: '请输入创建者用户名', caption: '创建者' },
+    { name: 'updater', type: 'text', placeholder: '请输入更新者用户名', caption: '更新者' }
+  ],
+  columns: [
+    { name: 'id', caption: 'ID', sort: true, ordering: 1, type: 'Link', typeInfo: { base_url: '{% url 'web-course-teacher-relations' oid cid %}', key: 'id' } },
+    { name: 'teacher', caption: '教师ID', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-teachers' oid %}', key: 'teacher' } },
+    { name: 'teacher_id', caption: '工号', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-teachers' oid %}', key: 'teacher' } },
+    { name: 'name', caption: '姓名', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-teachers' oid %}', key: 'teacher' } },
+    { name: 'phone', caption: '电话', sort: true, type: 'Text' },
+    { name: "available", caption: "可用", type: 'Boolean' },
+  ],
+  createURL: '{% url 'web-course-teacher-relations-create' oid cid %}'
+})
+
+</script>
+{% endblock %}

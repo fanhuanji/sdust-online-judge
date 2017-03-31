@@ -41,12 +41,26 @@ student_patterns = [
 course_patterns = [
     url(r'^$', CoursePages.Course.list, name='web-courses'),
     url(r'^create/', CoursePages.Course.create, name='web-courses-create'),
-    url(r'^(\d+)/', CoursePages.Course.instance, name='web-courses-instance')
+    url(r'^(\d+)/$', CoursePages.Course.instance, name='web-courses-instance'),
+]
+
+course_teacher_patterns = [
+    url(r'^$', CoursePages.CourseTeacherRelation.list, name='web-course-teacher-relations'),
+    url(r'^create/', CoursePages.CourseTeacherRelation.create, name='web-course-teacher-relations-create'),
+    url(r'^(\d+)/$', CoursePages.CourseTeacherRelation.instance, name='web-course-teacher-relations-instance')
+]
+
+course_student_patterns = [
+    url(r'^$', CoursePages.CourseStudentRelation.list, name='web-course-student-relations'),
+    url(r'^create/', CoursePages.CourseStudentRelation.create, name='web-course-student-relations-create'),
+    url(r'^(\d+)/$', CoursePages.CourseStudentRelation.instance, name='web-course-student-relations-instance')
 ]
 
 course_readonly_patterns = [
     url(r'^$', CoursePages.CourseReadonly.list, name='web-course-readonly'),
     url(r'^(\d+)/$', CoursePages.CourseReadonly.instance, name='web-course-readonly-instance'),
+    url(r'^(\d+)/student-relations/', include(course_student_patterns)),
+    url(r'^(\d+)/teacher-relations/', include(course_teacher_patterns)),
 ]
 
 course_meta_patterns = [

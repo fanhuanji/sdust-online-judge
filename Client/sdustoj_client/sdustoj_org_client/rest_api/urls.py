@@ -49,22 +49,45 @@ admin_org_router.register(
     r'courses', CourseViewSets.Course.CourseEduViewSet, base_name='admin-course-readonly'
 )
 admin_org_router.register(
-    r'course-groups', CourseViewSets.CourseGroup.CourseGroupAdminViewSet, base_name='admin-course-group'
+    r'course-groups', CourseViewSets.CourseGroup.CourseGroupAdminViewSet,
+    base_name='admin-course-group'
 )
 
+admin_course_router = NestedSimpleRouter(admin_org_router, r'courses', lookup='course')
+admin_course_router.register(
+    r'teacher-relations', CourseViewSets.TeacherRelation.List.TeacherRelationAdminViewSet,
+    base_name='admin-course-teacher-relation'
+)
+admin_course_router.register(
+    r'teacher-relations', CourseViewSets.TeacherRelation.Instance.TeacherRelationAdminViewSet,
+    base_name='admin-course-teacher-relation'
+)
+admin_course_router.register(
+    r'student-relations', CourseViewSets.StudentRelation.List.StudentRelationAdminViewSet,
+    base_name='admin-course-student-relation'
+)
+admin_course_router.register(
+    r'student-relations', CourseViewSets.StudentRelation.Instance.StudentRelationAdminViewSet,
+    base_name='admin-course-student-relation'
+)
 admin_course_meta_router = NestedSimpleRouter(admin_org_router, r'course-meta', lookup='course_meta')
 admin_course_meta_router.register(
     r'courses', CourseViewSets.Course.CourseMetaAdminViewSet, base_name='admin-course'
 )
 admin_course_group_router = NestedSimpleRouter(admin_org_router, r'course-groups', lookup='course_group')
 admin_course_group_router.register(
-    r'course-relations', CourseViewSets.CourseGroup.CourseGroupRelationAdminViewSet,
+    r'course-relations', CourseViewSets.CourseGroup.CourseGroupRelation.List.CourseGroupRelationAdminViewSet,
+    base_name='admin-course-group-relation'
+)
+admin_course_group_router.register(
+    r'course-relations', CourseViewSets.CourseGroup.CourseGroupRelation.Instance.CourseGroupRelationAdminViewSet,
     base_name='admin-course-group-relation'
 )
 
 admin_url_patterns = []
 admin_url_patterns += admin_router.urls
 admin_url_patterns += admin_org_router.urls
+admin_url_patterns += admin_course_router.urls
 admin_url_patterns += admin_course_meta_router.urls
 admin_url_patterns += admin_course_group_router.urls
 

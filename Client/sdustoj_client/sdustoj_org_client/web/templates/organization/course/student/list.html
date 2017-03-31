@@ -1,0 +1,39 @@
+{% extends "organization/course/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}课程下的学生{% endblock %}
+
+{% block nav_course_student %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="student"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.DRFTable({
+  id: 'student',
+  title: '学生',
+  url: "{% url 'admin-course-student-relation-list' oid cid %}",
+  search: true,
+  filters: [
+    { name: 'creator', type: 'text', placeholder: '请输入创建者用户名', caption: '创建者' },
+    { name: 'updater', type: 'text', placeholder: '请输入更新者用户名', caption: '更新者' }
+  ],
+  columns: [
+    { name: 'id', caption: 'ID', sort: true, ordering: 1, type: 'Link', typeInfo: { base_url: '{% url 'web-course-student-relations' oid cid %}', key: 'id' } },
+    { name: 'student', caption: '学生ID', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-students' oid %}', key: 'student' } },
+    { name: 'student_id', caption: '学号', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-students' oid %}', key: 'student' } },
+    { name: 'grade', caption: '年级', sort: true, type: 'Text' },
+    { name: 'class_in', caption: '班级', sort: true, type: 'Text' },
+    { name: "available", caption: "可用", type: 'Boolean' },
+  ],
+  createURL: '{% url 'web-course-student-relations-create' oid cid %}'
+})
+
+</script>
+{% endblock %}

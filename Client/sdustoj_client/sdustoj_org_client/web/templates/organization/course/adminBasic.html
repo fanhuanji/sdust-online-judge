@@ -3,4 +3,6 @@
 
 {% block sub_course_nav %}
 <a class="nav-link {% block nav_course_readonly_instance %}{% endblock %}" href="{% url 'web-course-readonly-instance' oid cid %}">&nbsp;&nbsp;&nbsp;&nbsp;课程信息</a>
+<a class="nav-link {% block nav_course_teacher %}{% endblock %}" href="{% url 'web-course-teacher-relations' oid cid %}">&nbsp;&nbsp;&nbsp;&nbsp;该课程下的教师</a>
+<a class="nav-link {% block nav_course_student %}{% endblock %}" href="{% url 'web-course-student-relations' oid cid %}">&nbsp;&nbsp;&nbsp;&nbsp;该课程下的学生</a>
 {% endblock %}

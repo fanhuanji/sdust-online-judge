@@ -116,6 +116,9 @@ class Student(Resource):
     grade = models.CharField(max_length=32, null=None)
     class_in = models.CharField(max_length=128, null=None)
 
+    def __str__(self):
+        return '<Student %s: %s %s>' % (self.id, self.student_id, self.name)
+
 
 class Teacher(Resource):
     """
@@ -140,6 +143,9 @@ class Teacher(Resource):
     email = models.EmailField(max_length=128, null=True)
 
     teacher_id = models.CharField(max_length=32)
+
+    def __str__(self):
+        return '<Teacher %s: %s %s>' % (self.id, self.teacher_id, self.name)
 
 
 class EduAdmin(Resource):
@@ -251,3 +257,25 @@ class CourseGroupRelation(Resource):
     organization = models.ForeignKey(Organization, related_name='course_group_relations', to_field='id')
     course = models.ForeignKey(Course, related_name='group_relations', to_field='id')
     group = models.ForeignKey(CourseGroup, related_name='course_relations', to_field='id')
+
+
+class CourseTeacherRelation(Resource):
+    """
+    课程与老师的多对多关系
+    """
+    id = models.BigAutoField(primary_key=True)
+
+    organization = models.ForeignKey(Organization, related_name='course_teacher_relations', to_field='id')
+    course = models.ForeignKey(Course, related_name='teacher_relations', to_field='id')
+    teacher = models.ForeignKey(Teacher, related_name='course_relations', to_field='id')
+
+
+class CourseStudentRelation(Resource):
+    """
+    课程与学生的多对多关系
+    """
+    id = models.BigAutoField(primary_key=True)
+
+    organization = models.ForeignKey(Organization, related_name='course_student_relations', to_field='id')
+    course = models.ForeignKey(Course, related_name='student_relations', to_field='id')
+    student = models.ForeignKey(Student, related_name='course_relations', to_field='id')

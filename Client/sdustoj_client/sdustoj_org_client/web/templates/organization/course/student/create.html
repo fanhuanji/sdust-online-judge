@@ -1,0 +1,38 @@
+{% extends "organization/course/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}添加学生到课程{% endblock %}
+
+{% block nav_course_student %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="student"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxForm({
+  id: 'student',
+  method: 'POST',
+  toSuccess: '{% url 'web-course-student-relations' oid cid %}',
+  url: '{% url 'admin-course-student-relation-list' oid cid %}',
+  items: [
+    {
+      name: 'available',
+      caption: '可用',
+      type: 'Boolean',
+      defaultTrue: true
+    },
+    {
+      name: 'student',
+      caption: '学生ID',
+      type: 'Number',
+    }
+  ]
+})
+</script>
+{% endblock %}
