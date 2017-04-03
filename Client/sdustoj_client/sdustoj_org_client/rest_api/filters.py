@@ -122,11 +122,20 @@ class CourseFilters:
                 'create_time_gte', 'create_time_lte', 'update_time_gte', 'update_time_lte'
             )
 
-    class CourseGroup(Utils.ResourceFilter):
+    class CourseGroupAdmin(Utils.ResourceFilter):
         class Meta:
             model = models.CourseGroup
             fields = (
                 'id', 'caption', 'available',
+                'creator', 'create_time', 'updater', 'update_time',
+                'create_time_gte', 'create_time_lte', 'update_time_gte', 'update_time_lte'
+            )
+
+    class CourseGroup(Utils.ResourceFilter):
+        class Meta:
+            model = models.CourseGroup
+            fields = (
+                'id', 'caption', 'available', 'organization',
                 'creator', 'create_time', 'updater', 'update_time',
                 'create_time_gte', 'create_time_lte', 'update_time_gte', 'update_time_lte'
             )

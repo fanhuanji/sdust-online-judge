@@ -16,7 +16,7 @@ class Resource(models.Model):
     update_time = models.DateTimeField(auto_now=True)
 
     available = models.BooleanField(default=True)
-    deleted  = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -242,6 +242,10 @@ class CourseGroup(Resource):
     courses = models.ManyToManyField('Course', related_name='groups', through='CourseGroupRelation',
                                      through_fields=('group', 'course'))
 
+    teachers = models.ManyToManyField('Teacher', related_name='course_groups',
+                                      through='CourseGroupTeacherRelation',
+                                      through_fields=('group', 'teacher'))
+
     number_courses = models.IntegerField(default=0)
 
 
@@ -286,9 +290,22 @@ class CourseTeacherRelation(Resource):
     """
     id = models.BigAutoField(primary_key=True)
 
-    organization = models.ForeignKey(Organization, related_name='course_teacher_relations', to_field='id')
+    organization = models.ForeignKey(Organization, related_name='course_teacher_relations',
+                                     to_field='id')
     course = models.ForeignKey(Course, related_name='teacher_relations', to_field='id')
     teacher = models.ForeignKey(Teacher, related_name='course_relations', to_field='id')
+
+
+class CourseGroupTeacherRelation(Resource):
+    """
+    课程组与老师的多对多关系
+    """
+    id = models.BigAutoField(primary_key=True)
+
+    organization = models.ForeignKey(Organization, related_name='course_group_teacher_relations',
+                                     to_field='id')
+    group = models.ForeignKey(CourseGroup, related_name='teacher_relations', to_field='id')
+    teacher = models.ForeignKey(Teacher, related_name='course_group_relations', to_field='id')
 
 
 class CourseStudentRelation(Resource):
@@ -300,3 +317,53 @@ class CourseStudentRelation(Resource):
     organization = models.ForeignKey(Organization, related_name='course_student_relations', to_field='id')
     course = models.ForeignKey(Course, related_name='student_relations', to_field='id')
     student = models.ForeignKey(Student, related_name='course_relations', to_field='id')
+
+
+# -- Mission --------------------------------------------------------------------------------------
+
+class WorkGroup(Resource):
+    """
+    任务组
+    """
+    id = models.BigAutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, related_name='work_groups', to_field='id')
+    unit = models.ForeignKey(CourseUnit, related_name='mission_groups', to_field='id')
+
+    caption = models.CharField(max_length=256)
+    info = models.TextField(max_length=1024, null=True)
+
+
+class Work(Resource):
+    """
+    任务
+    """
+    class TYPE:
+        work = 'WORK'
+        experiment = 'EXPERIMENT'
+        exam = 'EXAM'
+    id = models.BigAutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, related_name='works', to_field='id')
+    teacher = models.ForeignKey(Teacher, related_name='works', to_field='id')
+
+    type = models.CharField(max_length=16, default='WORK')
+
+    caption = models.CharField(max_length=256)
+    info = models.TextField(max_length=1024, null=True)
+
+    start_time = models.DateTimeField()             # 开始时间
+    hide_time = models.DateTimeField()              # 封榜时间
+    end_time = models.DateTimeField()               # 结束时间
+    show_time = models.DateTimeField()              # 显示榜的时间
+
+    result_delay = models.IntegerField(default=0)   # 提交记录显示结果延迟的时间(分钟)
+
+
+class WorkGroupRelation(Resource):
+    id = models.BigAutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, related_name='work_group_relations',
+                                     to_field='id', on_delete=models.CASCADE)
+
+    work = models.ForeignKey(WorkGroup, related_name='group_relations', to_field='id',
+                             on_delete=models.CASCADE)
+    group = models.ForeignKey(WorkGroup, related_name='work_relations', to_field='id',
+                              on_delete=models.CASCADE)

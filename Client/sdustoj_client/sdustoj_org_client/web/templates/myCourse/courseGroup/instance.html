@@ -1,0 +1,40 @@
+{% extends "myCourse/courseGroup/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}课程组信息{% endblock %}
+
+{% block nav_course_group_info %}active{% endblock %}
+
+{% block sub_content2 %}
+<div class="col-12">
+  <div class="container">
+    <div id="courseGroup"></div>
+  </div>
+  <br />
+  <br />
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.SimpleAjaxInfo({
+  id: 'courseGroup',
+  title: '课程组信息',
+  getMethod: 'GET',
+  getURL: '{% url 'api-course-group-detail' cid %}',
+  items: [
+    { name: 'id', caption: '课程组ID', type: 'Number', readOnly: true },
+    { name: 'organization', caption: '所属机构ID', type: 'Number', readOnly: true },
+    { name: 'organization_caption', caption: '所属机构', type: 'Text', readOnly: true },
+    'Divide',
+    { name: 'caption', caption: '课程组名称', type: 'Text', typeInfo: { max_length: 150 } },
+    'Divide',
+    { name: 'creator', caption: '创建者', type: 'Text', readOnly: true },
+    { name: 'create_time', caption: '创建时间', type: 'Datetime', readOnly: true },
+    { name: 'updater', caption: '更新者', type: 'Text', readOnly: true },
+    { name: 'update_time', caption: '更新时间', type: 'Datetime', readOnly: true }
+  ]
+
+})
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "myCourse/adminBasic.html" %}
+{% load staticfiles %}
+
+{% block title %}我的课程组{% endblock %}
+
+{% block nav_course_group %}active{% endblock %}
+
+{% block nav_course_groups %}active{% endblock %}
+
+{% block sub_content %}
+<div class="container">
+  <div class="col-xs-12">
+    <div id="courseGroup"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+SATable.DRFTable({
+  id: 'courseGroup',
+  title: '我管理的课程组',
+  url: "{% url 'api-course-group-list' %}",
+  search: true,
+  filters: [
+    { name: 'creator', type: 'text', placeholder: '请输入创建者用户名', caption: '创建者' },
+    { name: 'updater', type: 'text', placeholder: '请输入更新者用户名', caption: '更新者' }
+  ],
+  columns: [
+    { name: 'id', caption: 'ID', sort: true, ordering: 1, type: 'Link', typeInfo: { base_url: '{% url 'web-my-course-groups' %}', key: 'id' } },
+    { name: 'organization_caption', caption: '所属机构', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-my-orgs' %}', key: 'organization' } },
+    { name: 'caption', caption: '课程组名称', sort: true, type: 'Link', typeInfo: { base_url: '{% url 'web-my-course-groups' %}', key: 'id' } }
+  ]
+})
+
+</script>
+{% endblock %}

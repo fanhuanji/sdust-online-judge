@@ -4,4 +4,5 @@
 {% block sub_sub_nav %}
 <a class="nav-link {% block nav_course_group_instance %}{% endblock %}" href="{% url 'web-course-groups-instance' oid gid %}">&nbsp;&nbsp;&nbsp;&nbsp;课程组信息</a>
 <a class="nav-link {% block nav_course_group_relation_instance %}{% endblock %}" href="{% url 'web-course-group-relations' oid gid %}">&nbsp;&nbsp;&nbsp;&nbsp;组内课程</a>
+<a class="nav-link {% block nav_course_group_teacher %}{% endblock %}" href="{% url 'web-course-group-teacher-relations' oid gid %}">&nbsp;&nbsp;&nbsp;&nbsp;组内教师</a>
 {% endblock %}

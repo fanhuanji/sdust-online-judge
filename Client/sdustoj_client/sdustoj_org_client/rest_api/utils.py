@@ -1,5 +1,5 @@
 from .models import EduAdmin, Teacher, Student
-from .models import CourseStudentRelation, CourseTeacherRelation
+from .models import CourseStudentRelation, CourseTeacherRelation, CourseGroupTeacherRelation
 from .models import IdentityChoices
 
 
@@ -61,11 +61,17 @@ def flush_courses(user):
     t_s = getattr(CourseTeacherRelation, 'objects').filter(teacher__user=user).values('course_id').distinct()
     for course in t_s:
         teacher_courses.append(course['course_id'])
+    teacher_course_groups = []
+    t_g = getattr(CourseGroupTeacherRelation, 'objects').filter(teacher__user=user).values('group_id').distinct()
+    for group in t_g:
+        teacher_course_groups.append(group['group_id'])
 
     if student_courses:
         courses[IdentityChoices.student] = student_courses
     if teacher_courses:
         courses[IdentityChoices.teacher] = teacher_courses
+    if teacher_course_groups:
+        courses[IdentityChoices.teacher+'Groups'] = teacher_course_groups
 
     profile.courses = courses
     profile.save()

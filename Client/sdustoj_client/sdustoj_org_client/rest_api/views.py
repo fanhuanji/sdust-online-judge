@@ -822,7 +822,7 @@ class CourseViewSets(object):
             serializer_class = serializers.CourseSerializers.CourseGroup.CourseGroupAdmin
             permission_classes = (permissions.IsEduAdmin, )
             lookup_field = 'id'
-            filter_class = filters.CourseFilters.CourseGroup
+            filter_class = filters.CourseFilters.CourseGroupAdmin
             search_fields = ('id', 'caption')
             ordering_fields = ('id', 'caption', 'number_courses',
                                'creator', 'updater', 'create_time', 'update_time')
@@ -845,11 +845,35 @@ class CourseViewSets(object):
                 instance.organization.save()
                 super().perform_destroy(instance)
 
+        class CourseGroupTeacherViewSet(Utils.ViewSets.ResourceReadOnlyViewSet):
+            queryset = getattr(models.CourseGroup, 'objects').order_by('id')
+            serializer_class = serializers.CourseSerializers.CourseGroup.CourseGroup
+            permission_classes = (permissions.IsTeacher,)
+            lookup_field = 'id'
+            filter_class = filters.CourseFilters.CourseGroup
+            search_fields = ('id', 'caption')
+            ordering_fields = ('id', 'caption', 'number_courses',
+                               'creator', 'updater', 'create_time', 'update_time')
+
+            def _set_queryset(self, request):
+                if not utils.is_root(request.user):
+                    self.queryset = getattr(models.CourseGroup, 'objects').filter(
+                        teachers__user=request.user, available=True, deleted=False
+                    ).order_by('id')
+
+            def list(self, request, *args, **kwargs):
+                self._set_queryset(request)
+                return super().list(request, *args, **kwargs)
+
+            def retrieve(self, request, *args, **kwargs):
+                self._set_queryset(request)
+                return super().retrieve(request, *args, **kwargs)
+
         class CourseGroupRelation(object):
             class List(object):
                 class CourseGroupRelationAdminViewSet(Utils.ViewSets.OrgListViewSet):
                     queryset = getattr(models.CourseGroupRelation, 'objects').order_by('id')
-                    serializer_class = serializers.CourseSerializers.CourseGroup.CourseRelation.ListAdmin
+                    serializer_class = serializers.CourseSerializers.CourseGroupRelation.ListAdmin
                     permission_classes = (permissions.IsEduAdmin,)
                     lookup_field = 'id'
                     filter_class = filters.CourseFilters.CourseGroupRelation
@@ -870,7 +894,7 @@ class CourseViewSets(object):
             class Instance(object):
                 class CourseGroupRelationAdminViewSet(Utils.ViewSets.OrgInstanceViewSet):
                     queryset = getattr(models.CourseGroupRelation, 'objects').order_by('id')
-                    serializer_class = serializers.CourseSerializers.CourseGroup.CourseRelation.InstanceAdmin
+                    serializer_class = serializers.CourseSerializers.CourseGroupRelation.InstanceAdmin
                     permission_classes = (permissions.IsEduAdmin,)
                     lookup_field = 'id'
 
@@ -918,7 +942,45 @@ class CourseViewSets(object):
                 parent_pk_field = 'id'
 
                 def perform_destroy(self, instance):
-                    user = instance.teaher.user
+                    user = instance.teacher.user
+                    super().perform_destroy(instance)
+                    utils.flush_courses(user)
+
+    class GroupTeacherRelation(object):
+        class List(object):
+            class GroupTeacherRelationAdminViewSet(Utils.ViewSets.OrgListViewSet):
+                queryset = getattr(models.CourseGroupTeacherRelation, 'objects')
+                serializer_class = serializers.CourseSerializers.GroupTeacherRelation.ListAdmin
+                permission_classes = (permissions.IsEduAdmin, )
+                lookup_field = 'id'
+
+                search_fields = ('id', )
+                ordering_fields = ('id', 'creator', 'updater', 'create_time', 'update_time')
+
+                parent_queryset = getattr(models.CourseGroup, 'objects')
+                parent_lookup = 'course_group_id'
+                parent_related_name = 'group'
+                parent_pk_field = 'id'
+
+                def perform_create(self, serializer):
+                    instance = super().perform_create(serializer)
+                    utils.flush_courses(instance.teacher.user)
+                    return instance
+
+        class Instance(object):
+            class GroupTeacherRelationAdminViewSet(Utils.ViewSets.OrgInstanceViewSet):
+                queryset = getattr(models.CourseGroupTeacherRelation, 'objects')
+                serializer_class = serializers.CourseSerializers.GroupTeacherRelation.InstanceAdmin
+                permission_classes = (permissions.IsEduAdmin, )
+                lookup_field = 'id'
+
+                parent_queryset = getattr(models.CourseGroup, 'objects')
+                parent_lookup = 'course_group_id'
+                parent_related_name = 'group'
+                parent_pk_field = 'id'
+
+                def perform_destroy(self, instance):
+                    user = instance.teacher.user
                     super().perform_destroy(instance)
                     utils.flush_courses(user)
 

@@ -83,6 +83,14 @@ admin_course_group_router.register(
     r'course-relations', CourseViewSets.CourseGroup.CourseGroupRelation.Instance.CourseGroupRelationAdminViewSet,
     base_name='admin-course-group-relation'
 )
+admin_course_group_router.register(
+    r'teacher-relations', CourseViewSets.GroupTeacherRelation.List.GroupTeacherRelationAdminViewSet,
+    base_name='admin-course-group-teacher-relation'
+)
+admin_course_group_router.register(
+    r'teacher-relations', CourseViewSets.GroupTeacherRelation.Instance.GroupTeacherRelationAdminViewSet,
+    base_name='admin-course-group-teacher-relation'
+)
 
 admin_url_patterns = []
 admin_url_patterns += admin_router.urls
@@ -107,6 +115,10 @@ router.register(
 )
 router.register(
     r'organizations', OrgViewSets.Organization.Instance.OrganizationViewSet, base_name='api-organization'
+)
+router.register(
+    r'course-groups', CourseViewSets.CourseGroup.CourseGroupTeacherViewSet,
+    base_name='api-course-group'
 )
 router.register(
     r'courses-teaching', CourseViewSets.Course.CourseTeacherViewSet,

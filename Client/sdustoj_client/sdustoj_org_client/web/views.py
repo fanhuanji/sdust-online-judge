@@ -330,6 +330,29 @@ class CoursePages(object):
                 'gid': gid
             })
 
+    class CourseGroupTeacherRelation(object):
+        @staticmethod
+        def list(request, oid, gid):
+            return Utils.Render.edu_admin_org(request, oid, 'organization/courseGroup/teacher/list.html', {
+                'oid': oid,
+                'gid': gid
+            })
+
+        @staticmethod
+        def create(request, oid, gid):
+            return Utils.Render.edu_admin_org(request, oid, 'organization/courseGroup/teacher/create.html', {
+                'oid': oid,
+                'gid': gid
+            })
+
+        @staticmethod
+        def instance(request, oid, gid, rid):
+            return Utils.Render.edu_admin_org(request, oid, 'organization/courseGroup/teacher/instance.html', {
+                'oid': oid,
+                'gid': gid,
+                'rid': rid
+            })
+
     class Course(object):
         @staticmethod
         def list(request, oid, mid):
@@ -454,6 +477,18 @@ class MyCoursePages(object):
         def instance(request, cid):
             return Utils.Render.teacher(request,
                                         'myCourse/teachingCourse/instance.html',
+                                        {'cid': cid})
+
+    class CourseGroup(object):
+        @staticmethod
+        def list(request):
+            return Utils.Render.teacher(request,
+                                        'myCourse/courseGroup/list.html')
+
+        @staticmethod
+        def instance(request, cid):
+            return Utils.Render.teacher(request,
+                                        'myCourse/courseGroup/instance.html',
                                         {'cid': cid})
 
     class StudentRelation(object):

@@ -870,7 +870,7 @@ class CourseSerializers(object):
         class CourseGroupAdmin(serializers.ModelSerializer):
             class Meta:
                 model = models.CourseGroup
-                exclude = ('organization', 'courses')
+                exclude = ('organization', 'courses', 'teachers')
                 read_only_fields = ('id', 'meta', 'number_courses',
                                     'creator', 'create_time', 'updater', 'update_time')
 
@@ -881,32 +881,43 @@ class CourseSerializers(object):
                 course_unit.save()
                 return instance
 
-        class CourseRelation(object):
-            class ListAdmin(serializers.ModelSerializer):
-                class Meta:
-                    model = models.CourseGroupRelation
-                    exclude = ('organization', 'group')
-                    read_only_fields = ('id', 'creator', 'create_time', 'updater', 'update_time')
+        class CourseGroup(serializers.ModelSerializer):
+            organization_caption = serializers.SlugRelatedField(
+                source='organization', many=False, read_only=True, slug_field='caption'
+            )
 
-                def create(self, validated_data):
-                    group = validated_data['group']
-                    course = validated_data['course']
-                    if group.organization != course.organization:
-                        info = {"course": ["Course not exists."]}
-                        raise serializers.ValidationError(info)
-                    if getattr(models.CourseGroupRelation, 'objects').filter(
+            class Meta:
+                model = models.CourseGroup
+                exclude = ('courses', 'teachers')
+                read_only_fields = ('id', 'number_courses', 'organization'
+                                    'creator', 'create_time', 'updater', 'update_time')
+
+    class CourseGroupRelation(object):
+        class ListAdmin(serializers.ModelSerializer):
+            class Meta:
+                model = models.CourseGroupRelation
+                exclude = ('organization', 'group',)
+                read_only_fields = ('id', 'creator', 'create_time', 'updater', 'update_time')
+
+            def create(self, validated_data):
+                group = validated_data['group']
+                course = validated_data['course']
+                if group.organization != course.organization:
+                    info = {"course": ["Course not exists."]}
+                    raise serializers.ValidationError(info)
+                if getattr(models.CourseGroupRelation, 'objects').filter(
                         group=group, course=course
-                    ).exists():
-                        info = {"course": ["Course exists."]}
-                        raise serializers.ValidationError(info)
-                    return super().create(validated_data)
+                ).exists():
+                    info = {"course": ["Course exists."]}
+                    raise serializers.ValidationError(info)
+                return super().create(validated_data)
 
-            class InstanceAdmin(serializers.ModelSerializer):
-                class Meta:
-                    model = models.CourseGroupRelation
-                    exclude = ('organization', 'group', )
-                    read_only_fields = ('id', 'course',
-                                        'creator', 'create_time', 'updater', 'update_time')
+        class InstanceAdmin(serializers.ModelSerializer):
+            class Meta:
+                model = models.CourseGroupRelation
+                exclude = ('organization', 'group',)
+                read_only_fields = ('id', 'course',
+                                    'creator', 'create_time', 'updater', 'update_time')
 
     class TeacherRelation(object):
         class ListAdmin(serializers.ModelSerializer):
@@ -964,6 +975,65 @@ class CourseSerializers(object):
             class Meta:
                 model = models.CourseTeacherRelation
                 exclude = ('organization', 'course', )
+                read_only_fields = ('creator', 'create_time', 'updater', 'update_time',
+                                    'teacher')
+
+    class GroupTeacherRelation(object):
+        class ListAdmin(serializers.ModelSerializer):
+            teacher_id = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='teacher_id'
+            )
+            name = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='name'
+            )
+            sex = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='sex'
+            )
+            phone = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='phone'
+            )
+            email = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='email'
+            )
+
+            class Meta:
+                model = models.CourseGroupTeacherRelation
+                exclude = ('organization', 'group', )
+                read_only_fields = ('creator', 'create_time', 'updater', 'update_time')
+
+            def create(self, validated_data):
+                teacher = validated_data['teacher']
+                group = validated_data['group']
+                if teacher.organization != group.organization:
+                    info = {"teacher": ["Teacher not exist."]}
+                    raise serializers.ValidationError(info)
+                if getattr(models.CourseGroupTeacherRelation, 'objects').filter(
+                        teacher=teacher, group=group
+                ).exists():
+                    info = {"teacher": ["Teacher exists."]}
+                    raise serializers.ValidationError(info)
+                return super().create(validated_data)
+
+        class InstanceAdmin(serializers.ModelSerializer):
+            teacher_id = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='teacher_id'
+            )
+            name = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='name'
+            )
+            sex = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='sex'
+            )
+            phone = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='phone'
+            )
+            email = serializers.SlugRelatedField(
+                source='teacher', many=False, read_only=True, slug_field='email'
+            )
+
+            class Meta:
+                model = models.CourseGroupTeacherRelation
+                exclude = ('organization', 'group', )
                 read_only_fields = ('creator', 'create_time', 'updater', 'update_time',
                                     'teacher')
 

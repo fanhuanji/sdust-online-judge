@@ -44,7 +44,7 @@ def check_init_user():
 def check_root_organization():
     from .models import Organization
     print('Checking root organization ...', end='')
-    if Organization.objects.filter(name='ROOT').exists():
+    if getattr(Organization, 'objects').filter(name='ROOT').exists():
         print(' Done')
     else:
         print(' Root organization does not exist')
@@ -57,6 +57,7 @@ def check_root_organization():
 
 
 def callback(sender, **kwargs):
+    from initial_op import initial_op
     # 去掉PyCharm的坑爹Warning ---------
     if sender:
         pass
@@ -65,6 +66,8 @@ def callback(sender, **kwargs):
     # ---------------------------------
     check_init_user()
     check_root_organization()
+    for op in initial_op:
+        op()
 
 
 class RestApiConfig(AppConfig):
